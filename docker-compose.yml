@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: namira-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: namira
+      POSTGRES_PASSWORD: namira
+      POSTGRES_DB: namira
+    ports:
+      - "5433:5432"
+    volumes:
+      - namira_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U namira -d namira"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  namira_postgres_data:

@@ -13,6 +13,22 @@ O código do projeto está pronto para instalar dependências assim que você ti
    npm install
    ```
 
+## Desenvolvimento local (Docker)
+
+```bash
+cd namira
+cp .env.example .env
+# Ou use o .env já preparado para Docker (porta 5433)
+
+docker compose up -d
+npm install
+npx prisma db push
+npm run db:seed
+npm run dev
+```
+
+Postgres sobe em `localhost:5433` (evita conflito com Postgres instalado na máquina).
+
 ## Após conseguir `npm install`
 
 ```bash
