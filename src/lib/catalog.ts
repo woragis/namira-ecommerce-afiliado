@@ -58,6 +58,11 @@ export async function getActiveStores() {
   });
 }
 
+export async function getBadges() {
+  if (!isDatabaseConfigured()) return [];
+  return prisma.badge.findMany({ orderBy: { label: "asc" } });
+}
+
 export async function getNavCategories() {
   if (!isDatabaseConfigured()) return [];
   return prisma.category.findMany({

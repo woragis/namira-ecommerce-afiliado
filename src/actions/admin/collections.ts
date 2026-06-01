@@ -94,6 +94,50 @@ export async function removeProductFromCollection(
   revalidatePath(`/admin/colecoes/${collectionId}`);
 }
 
+export async function moveCollectionProduct(
+  collectionId: string,
+  productId: string,
+  direction: "up" | "down",
+) {
+  const items = await prisma.collectionProduct.findMany({
+    where: { collectionId },
+    orderBy: { sortOrder: "asc" },
+  });
+
+  const index = items.findIndex((i) => i.productId === productId);
+  if (index < 0) return;
+
+  const targetIndex = direction === "up" ? index - 1 : index + 1;
+  if (targetIndex < 0 || targetIndex >= items.length) return;
+
+  const current = items[index];
+  const target = items[targetIndex];
+
+  await prisma.$transaction([
+    prisma.collectionProduct.update({
+      where: {
+        collectionId_productId: {
+          collectionId,
+          productId: current.productId,
+        },
+      },
+      data: { sortOrder: target.sortOrder },
+    }),
+    prisma.collectionProduct.update({
+      where: {
+        collectionId_productId: {
+          collectionId,
+          productId: target.productId,
+        },
+      },
+      data: { sortOrder: current.sortOrder },
+    }),
+  ]);
+
+  revalidatePath(`/admin/colecoes/${collectionId}`);
+  revalidatePath("/");
+}
+
 export async function deactivateCollection(id: string) {
   await prisma.collection.update({
     where: { id },

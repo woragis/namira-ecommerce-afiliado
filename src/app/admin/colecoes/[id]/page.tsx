@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import {
   addProductToCollection,
+  moveCollectionProduct,
   removeProductFromCollection,
   updateCollection,
 } from "@/actions/admin/collections";
@@ -63,18 +64,43 @@ export default async function AdminColecaoDetailPage({ params }: Props) {
       <h2 className="mb-3 font-semibold">Produtos na coleção</h2>
       <ul className="mb-8 space-y-2">
         {collection.products.map((cp, i) => (
-          <li key={cp.productId} className="flex items-center justify-between rounded-lg border border-zinc-800 px-3 py-2 text-sm">
-            <span>
+          <li
+            key={cp.productId}
+            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-800 px-3 py-2 text-sm"
+          >
+            <span className="min-w-0 flex-1">
               {i + 1}. {cp.product.title}{" "}
               <span style={{ color: cp.product.store.colorPrimary }}>
                 ({cp.product.store.name})
               </span>
             </span>
-            <form action={removeProductFromCollection.bind(null, id, cp.productId)}>
-              <button type="submit" className="text-xs text-red-400 cursor-pointer">
-                Remover
-              </button>
-            </form>
+            <div className="flex shrink-0 items-center gap-1">
+              <form action={moveCollectionProduct.bind(null, id, cp.productId, "up")}>
+                <button
+                  type="submit"
+                  disabled={i === 0}
+                  className="rounded border border-zinc-700 px-2 py-0.5 text-xs cursor-pointer disabled:opacity-30"
+                  title="Subir"
+                >
+                  ↑
+                </button>
+              </form>
+              <form action={moveCollectionProduct.bind(null, id, cp.productId, "down")}>
+                <button
+                  type="submit"
+                  disabled={i === collection.products.length - 1}
+                  className="rounded border border-zinc-700 px-2 py-0.5 text-xs cursor-pointer disabled:opacity-30"
+                  title="Descer"
+                >
+                  ↓
+                </button>
+              </form>
+              <form action={removeProductFromCollection.bind(null, id, cp.productId)}>
+                <button type="submit" className="ml-1 text-xs text-red-400 cursor-pointer">
+                  Remover
+                </button>
+              </form>
+            </div>
           </li>
         ))}
       </ul>

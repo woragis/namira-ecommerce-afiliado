@@ -1,7 +1,11 @@
 import { notFound } from "next/navigation";
 import { CatalogToolbar } from "@/components/catalog/catalog-toolbar";
+import { Pagination } from "@/components/catalog/pagination";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { getProducts, getStoreBySlug } from "@/lib/catalog";
+import { parseCatalogSearchParams } from "@/lib/filters";
+
+export const revalidate = 60;
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -14,11 +18,14 @@ export default async function LojaPage({ params, searchParams }: Props) {
   if (!store) notFound();
 
   const sp = await searchParams;
-  const ordenar = typeof sp.ordenar === "string" ? sp.ordenar : "recentes";
-  const { items, total } = await getProducts({
+  const filters = parseCatalogSearchParams(sp);
+  const { items, total, page, totalPages } = await getProducts({
+    ...filters,
     storeSlug: slug,
-    sort: ordenar as "recentes",
   });
+
+  const extra: Record<string, string> = { loja: slug };
+  if (filters.sort && filters.sort !== "recentes") extra.ordenar = filters.sort;
 
   return (
     <main className="px-6 py-9 md:px-10">
@@ -27,9 +34,16 @@ export default async function LojaPage({ params, searchParams }: Props) {
         subtitle="Produtos com link de afiliado"
         total={total}
         basePath={`/lojas/${slug}`}
-        currentSort={ordenar}
+        currentSort={filters.sort}
+        extraParams={extra}
       />
       <ProductGrid products={items} />
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        basePath={`/lojas/${slug}`}
+        extraParams={extra}
+      />
     </main>
   );
 }

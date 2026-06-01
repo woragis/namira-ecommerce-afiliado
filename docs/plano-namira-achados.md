@@ -121,8 +121,8 @@ Catálogo de afiliados em Next.js 16 + PostgreSQL (Supabase) + Storage (buckets 
 
 - [x] CRUD produtos básico (affiliate_url, preços, imagem URL, loja, publicar)
 - [x] CRUD categorias
-- [ ] CRUD badges (seed apenas; edição futura)
-- [x] CRUD coleções + produtos na coleção
+- [x] CRUD badges
+- [x] CRUD coleções + produtos na coleção (com reordenar ↑↓)
 - [x] Upload imagem em `product-images`
 
 **Commit:** `feat(fase-8): admin produtos categorias e coleções`
@@ -224,3 +224,13 @@ Fase 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10
 ```
 
 Cada fase = um ou mais commits atômicos na branch principal do repositório `namira`.
+
+---
+
+## Fase 11 — Extras (pós-MVP)
+
+- [x] Paginação em `/produtos`, `/lojas`, `/categorias`, `/busca`
+- [x] Filtros por badge (selo) no catálogo
+- [x] CRUD badges no admin (`/admin/badges`)
+- [x] Reordenar produtos na coleção (↑↓)
+- [x] `loading.tsx` e `error.tsx` no layout público

@@ -1,7 +1,11 @@
 import { notFound } from "next/navigation";
 import { CatalogToolbar } from "@/components/catalog/catalog-toolbar";
+import { Pagination } from "@/components/catalog/pagination";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { getCategoryBySlug, getProducts } from "@/lib/catalog";
+import { parseCatalogSearchParams } from "@/lib/filters";
+
+export const revalidate = 60;
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -14,17 +18,15 @@ export default async function CategoriaPage({ params, searchParams }: Props) {
   if (!category) notFound();
 
   const sp = await searchParams;
-  const loja = typeof sp.loja === "string" ? sp.loja : undefined;
-  const ordenar = typeof sp.ordenar === "string" ? sp.ordenar : "recentes";
-
-  const { items, total } = await getProducts({
+  const filters = parseCatalogSearchParams(sp);
+  const { items, total, page, totalPages } = await getProducts({
+    ...filters,
     categorySlug: slug,
-    storeSlug: loja,
-    sort: ordenar as "recentes",
   });
 
   const extra: Record<string, string> = { categoria: slug };
-  if (loja) extra.loja = loja;
+  if (filters.storeSlug) extra.loja = filters.storeSlug;
+  if (filters.sort && filters.sort !== "recentes") extra.ordenar = filters.sort;
 
   return (
     <main className="px-6 py-9 md:px-10">
@@ -32,10 +34,16 @@ export default async function CategoriaPage({ params, searchParams }: Props) {
         title={`${category.icon ?? ""} ${category.name}`.trim()}
         total={total}
         basePath={`/categorias/${slug}`}
-        currentSort={ordenar}
+        currentSort={filters.sort}
         extraParams={extra}
       />
       <ProductGrid products={items} />
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        basePath={`/categorias/${slug}`}
+        extraParams={extra}
+      />
     </main>
   );
 }
