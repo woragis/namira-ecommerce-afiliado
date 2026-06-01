@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   const secret = process.env.ADMIN_SECRET?.trim();
   if (secret) {
     const token = request.cookies.get(ADMIN_COOKIE)?.value;
-    if (!verifyAdminToken(token)) {
+    if (!(await verifyAdminToken(token))) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
   }

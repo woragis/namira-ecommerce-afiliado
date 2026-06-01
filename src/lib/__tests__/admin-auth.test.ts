@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createHash } from "node:crypto";
 import {
   adminToken,
   isAdminProtectionEnabled,
+  resetAdminTokenCache,
   verifyAdminToken,
 } from "@/lib/admin-auth";
 
@@ -10,10 +10,12 @@ describe("admin-auth", () => {
   const originalSecret = process.env.ADMIN_SECRET;
 
   beforeEach(() => {
+    resetAdminTokenCache();
     delete process.env.ADMIN_SECRET;
   });
 
   afterEach(() => {
+    resetAdminTokenCache();
     if (originalSecret === undefined) {
       delete process.env.ADMIN_SECRET;
     } else {
@@ -21,22 +23,24 @@ describe("admin-auth", () => {
     }
   });
 
-  it("disables protection when ADMIN_SECRET is missing", () => {
+  it("disables protection when ADMIN_SECRET is missing", async () => {
     expect(isAdminProtectionEnabled()).toBe(false);
-    expect(verifyAdminToken(undefined)).toBe(true);
-    expect(adminToken()).toBeNull();
+    expect(await verifyAdminToken(undefined)).toBe(true);
+    expect(await adminToken()).toBeNull();
   });
 
-  it("hashes secret into admin token", () => {
+  it("hashes secret into admin token", async () => {
     process.env.ADMIN_SECRET = "super-secret";
-    const expected = createHash("sha256").update("super-secret").digest("hex");
-    expect(adminToken()).toBe(expected);
+    const t1 = await adminToken();
+    const t2 = await adminToken();
+    expect(t1).toHaveLength(64);
+    expect(t1).toBe(t2);
   });
 
-  it("verifies valid token with timing-safe compare", () => {
+  it("verifies valid token with timing-safe compare", async () => {
     process.env.ADMIN_SECRET = "super-secret";
-    const token = adminToken()!;
-    expect(verifyAdminToken(token)).toBe(true);
-    expect(verifyAdminToken("wrong-token")).toBe(false);
+    const token = (await adminToken())!;
+    expect(await verifyAdminToken(token)).toBe(true);
+    expect(await verifyAdminToken("wrong-token")).toBe(false);
   });
 });

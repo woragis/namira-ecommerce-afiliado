@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_COOKIE, verifyAdminToken } from "@/lib/admin-auth";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (!pathname.startsWith("/admin")) {
@@ -18,7 +18,7 @@ export function middleware(request: NextRequest) {
   }
 
   const token = request.cookies.get(ADMIN_COOKIE)?.value;
-  if (verifyAdminToken(token)) {
+  if (await verifyAdminToken(token)) {
     return NextResponse.next();
   }
 
