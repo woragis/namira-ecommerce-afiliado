@@ -3,6 +3,7 @@ import { HomeSection } from "@/components/home/home-section";
 import { ViralBanner } from "@/components/home/viral-banner";
 import {
   getActiveStores,
+  getFeaturedProducts,
   getHomeCollections,
   getSiteSettings,
 } from "@/lib/catalog";
@@ -12,10 +13,11 @@ import { CollectionType } from "@prisma/client";
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [settings, stores, collections] = await Promise.all([
+  const [settings, stores, collections, featured] = await Promise.all([
     getSiteSettings(),
     getActiveStores(),
     getHomeCollections(),
+    getFeaturedProducts(8),
   ]);
 
   const banner = collections.find((c) => c.type === CollectionType.BANNER);
@@ -39,6 +41,14 @@ export default async function HomePage() {
         stores={stores}
       />
       <main className="px-6 py-9 md:px-10">
+        {featured.length > 0 ? (
+          <HomeSection
+            title="⭐ Destaques"
+            count={featured.length}
+            href="/produtos"
+            products={featured}
+          />
+        ) : null}
         {banner ? (
           <ViralBanner
             title={banner.name}
@@ -62,7 +72,7 @@ export default async function HomePage() {
             />
           );
         })}
-        {sections.length === 0 ? (
+        {sections.length === 0 && featured.length === 0 ? (
           <HomeSection
             title="🔥 Viral agora"
             count={0}

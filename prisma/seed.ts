@@ -266,6 +266,7 @@ async function main() {
     footer_disclaimer:
       "Este site contém links de afiliados. Ao clicar você será redirecionado à loja de origem. Não armazenamos dados de compra.",
     instagram_url: "https://instagram.com/",
+    whatsapp_phone: "",
   };
 
   for (const [key, value] of Object.entries(settings)) {

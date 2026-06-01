@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { isDatabaseConfigured } from "@/lib/safe-db";
-import { toggleProductPublished } from "@/actions/admin/products";
+import {
+  toggleProductFeatured,
+  toggleProductPublished,
+} from "@/actions/admin/products";
 import type { Prisma } from "@prisma/client";
 
 type Props = {
@@ -97,6 +100,7 @@ export default async function AdminProdutosPage({ searchParams }: Props) {
               <th className="p-3">Título</th>
               <th className="p-3">Loja</th>
               <th className="p-3">Preço</th>
+              <th className="p-3">Destaque</th>
               <th className="p-3">Publicado</th>
               <th className="p-3" />
             </tr>
@@ -116,6 +120,19 @@ export default async function AdminProdutosPage({ searchParams }: Props) {
                   {p.store.name}
                 </td>
                 <td className="p-3">R$ {Number(p.priceCurrent).toFixed(2)}</td>
+                <td className="p-3">
+                  <form
+                    action={toggleProductFeatured.bind(null, p.id, !p.isFeatured)}
+                  >
+                    <button
+                      type="submit"
+                      className={`cursor-pointer text-xs ${p.isFeatured ? "text-amber-400" : "text-zinc-500"}`}
+                      title="Destaque na home"
+                    >
+                      {p.isFeatured ? "⭐ Sim" : "Não"}
+                    </button>
+                  </form>
+                </td>
                 <td className="p-3">
                   <form
                     action={toggleProductPublished.bind(

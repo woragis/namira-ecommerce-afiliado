@@ -17,6 +17,8 @@ export type CatalogFilters = {
   categorySlug?: string;
   badgeSlug?: string;
   search?: string;
+  priceMin?: number;
+  priceMax?: number;
   sort?: "recentes" | "preco-asc" | "preco-desc" | "desconto";
   page?: number;
   limit?: number;
@@ -34,6 +36,7 @@ const defaultSettings: Record<string, string> = {
   stats_update_label: "diário",
   footer_disclaimer:
     "Este site contém links de afiliados. Ao clicar você será redirecionado à loja de origem.",
+  whatsapp_phone: "",
 };
 
 export async function getSiteSettings(): Promise<Record<string, string>> {
@@ -114,6 +117,17 @@ function buildProductWhere(filters: CatalogFilters): Prisma.ProductWhereInput {
     ];
   }
 
+  const priceFilter: Prisma.DecimalFilter<"Product"> = {};
+  if (filters.priceMin != null && !Number.isNaN(filters.priceMin)) {
+    priceFilter.gte = filters.priceMin;
+  }
+  if (filters.priceMax != null && !Number.isNaN(filters.priceMax)) {
+    priceFilter.lte = filters.priceMax;
+  }
+  if (Object.keys(priceFilter).length > 0) {
+    where.priceCurrent = priceFilter;
+  }
+
   return where;
 }
 
@@ -154,6 +168,16 @@ export async function getProducts(filters: CatalogFilters = {}) {
   ]);
 
   return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
+}
+
+export async function getFeaturedProducts(limit = 8) {
+  if (!isDatabaseConfigured()) return [];
+  return prisma.product.findMany({
+    where: { isPublished: true, isFeatured: true },
+    include: productInclude,
+    orderBy: [{ sortPriority: "desc" }, { publishedAt: "desc" }],
+    take: limit,
+  });
 }
 
 export async function getProductBySlug(slug: string) {

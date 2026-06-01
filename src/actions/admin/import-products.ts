@@ -112,6 +112,9 @@ export async function importProductsFromCsv(
     const description = row.description ?? row.descricao ?? "";
     const published =
       (row.published ?? row.publicado ?? "true").toLowerCase() !== "false";
+    const featured =
+      (row.is_featured ?? row.featured ?? row.destaque ?? "false").toLowerCase() ===
+      "true";
 
     const categorySlugs = splitList(row.categories ?? row.categorias ?? "");
     const badgeSlugs = splitList(row.badges ?? row.selos ?? "");
@@ -138,6 +141,7 @@ export async function importProductsFromCsv(
         affiliateUrl,
         storeId,
         isPublished: published,
+        isFeatured: featured,
         publishedAt: published ? new Date() : null,
       };
 

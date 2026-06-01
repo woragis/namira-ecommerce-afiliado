@@ -32,7 +32,7 @@ export function FavoriteButton({ productId }: { productId: string }) {
       type="button"
       onClick={toggle}
       aria-label={active ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-      className="absolute bottom-2.5 right-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-base shadow-md cursor-pointer transition hover:scale-110"
+      className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-base shadow-md cursor-pointer transition hover:scale-110"
     >
       {active ? "❤️" : "🤍"}
     </button>

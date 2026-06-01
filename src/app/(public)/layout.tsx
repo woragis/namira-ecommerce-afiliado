@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { StoreFilterNav } from "@/components/layout/store-filter-nav";
+import { WhatsAppFloat } from "@/components/layout/whatsapp-float";
 import {
   getActiveStores,
   getNavCategories,
@@ -32,6 +33,7 @@ export default async function PublicLayout({
         disclaimer={settings.footer_disclaimer}
         instagramUrl={settings.instagram_url}
       />
+      <WhatsAppFloat phone={settings.whatsapp_phone} />
     </>
   );
 }

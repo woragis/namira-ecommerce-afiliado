@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductGrid } from "@/components/catalog/product-grid";
+import { WhatsAppShareButton } from "@/components/catalog/whatsapp-share-button";
 import { formatPrice, getProductBySlug, getProducts } from "@/lib/catalog";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -94,13 +95,20 @@ export default async function ProdutoDetalhePage({ params }: Props) {
               </span>
             ) : null}
           </div>
-          <a
-            href={`/r/${product.id}`}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl py-4 text-base font-semibold text-white no-underline md:w-auto md:px-10"
-            style={{ backgroundColor: store.colorPrimary }}
-          >
-            Comprar na {store.name} →
-          </a>
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <a
+              href={`/r/${product.id}`}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl py-4 text-base font-semibold text-white no-underline sm:min-w-[200px]"
+              style={{ backgroundColor: store.colorPrimary }}
+            >
+              Comprar na {store.name} →
+            </a>
+            <WhatsAppShareButton
+              title={product.title}
+              productPath={`/produtos/${product.slug}`}
+              className="flex-1 sm:min-w-[200px]"
+            />
+          </div>
           <p className="mt-4 text-xs text-[var(--texto-suave)]">
             Link de afiliado — você será redirecionado para a loja oficial.
           </p>

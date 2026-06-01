@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
     "categories",
     "badges",
     "published",
+    "is_featured",
   ];
 
   const data = products.map((p) => [
@@ -45,6 +46,7 @@ export async function GET(request: NextRequest) {
     p.categories.map((c) => c.category.slug).join("|"),
     p.badges.map((b) => b.badge.slug).join("|"),
     p.isPublished ? "true" : "false",
+    p.isFeatured ? "true" : "false",
   ]);
 
   const csv = toCsv(headers, data);

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { DeleteProductButton } from "@/components/admin/delete-product-button";
 import { ProductForm } from "@/components/admin/product-form";
 import { prisma } from "@/lib/db";
 
@@ -24,7 +25,10 @@ export default async function EditarProdutoPage({ params }: Props) {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">Editar produto</h1>
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <h1 className="text-2xl font-bold">Editar produto</h1>
+        <DeleteProductButton productId={product.id} productTitle={product.title} />
+      </div>
       <ProductForm
         product={product}
         stores={stores}

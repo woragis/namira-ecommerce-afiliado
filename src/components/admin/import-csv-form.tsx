@@ -97,7 +97,7 @@ export function ImportCsvForm() {
       <div className="mt-8 rounded-xl border border-zinc-800 p-4 text-xs text-zinc-400">
         <p className="mb-2 font-semibold text-zinc-300">Colunas esperadas (primeira linha = cabeçalho):</p>
         <code className="block whitespace-pre-wrap text-amber-400/90">
-          title,affiliate_url,store_slug,price_current,price_original,image_url,categories,badges,published
+          title,affiliate_url,store_slug,price_current,price_original,image_url,categories,badges,published,is_featured
         </code>
         <p className="mt-3">
           <strong>store_slug:</strong> shopee, mercado-livre, amazon ·{" "}

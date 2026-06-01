@@ -247,3 +247,17 @@ Cada fase = um ou mais commits atômicos na branch principal do repositório `na
 - [x] Template CSV em `public/templates/produtos-exemplo.csv`
 
 **Commit:** `feat(fase-12): import export csv pwa e melhorias admin`
+
+---
+
+## Fase 13 — Filtro preço, destaques, exclusão e WhatsApp
+
+- [x] Filtro `preco_min` / `preco_max` no catálogo
+- [x] Seção **Destaques** na home (`isFeatured`)
+- [x] Excluir produto no admin com modal de confirmação
+- [x] Toggle destaque na lista e formulário de produto
+- [x] Botão **Compartilhar no WhatsApp** (card + detalhe)
+- [x] Botão flutuante WhatsApp (`whatsapp_phone` em configurações)
+- [ ] Notificações push — **fase posterior**
+
+**Commit:** `feat(fase-13): filtro preço destaques exclusão e whatsapp`

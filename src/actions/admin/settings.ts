@@ -13,6 +13,7 @@ const KEYS = [
   "stats_update_label",
   "footer_disclaimer",
   "instagram_url",
+  "whatsapp_phone",
 ] as const;
 
 export async function updateSiteSettings(formData: FormData) {

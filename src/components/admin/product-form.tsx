@@ -142,6 +142,14 @@ export function ProductForm({ stores, categories, badges, product }: Props) {
         />
         Publicado
       </label>
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          name="isFeatured"
+          defaultChecked={product?.isFeatured}
+        />
+        Destaque na home
+      </label>
 
       <button type="submit" className="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-zinc-950">
         Salvar

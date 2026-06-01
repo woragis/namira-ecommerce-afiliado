@@ -17,6 +17,7 @@ const productSchema = z.object({
   affiliateUrl: z.string().url(),
   storeId: z.string().uuid(),
   isPublished: z.coerce.boolean().optional(),
+  isFeatured: z.coerce.boolean().optional(),
 });
 
 function calcDiscount(current: number, original?: number | null) {
@@ -61,6 +62,7 @@ export async function createProduct(formData: FormData) {
     affiliateUrl: formData.get("affiliateUrl"),
     storeId: formData.get("storeId"),
     isPublished: formData.get("isPublished") === "on",
+    isFeatured: formData.get("isFeatured") === "on",
   });
 
   if (!parsed.success) throw new Error("Dados inválidos");
@@ -83,6 +85,7 @@ export async function createProduct(formData: FormData) {
       affiliateUrl: d.affiliateUrl,
       storeId: d.storeId,
       isPublished: d.isPublished ?? false,
+      isFeatured: d.isFeatured ?? false,
       publishedAt: d.isPublished ? new Date() : null,
     },
   });
@@ -93,6 +96,7 @@ export async function createProduct(formData: FormData) {
     parseIds(formData, "badgeIds"),
   );
 
+  revalidatePath("/");
   revalidatePath("/produtos");
   revalidatePath("/admin/produtos");
   redirect("/admin/produtos");
@@ -111,6 +115,7 @@ export async function updateProduct(id: string, formData: FormData) {
     affiliateUrl: formData.get("affiliateUrl"),
     storeId: formData.get("storeId"),
     isPublished: formData.get("isPublished") === "on",
+    isFeatured: formData.get("isFeatured") === "on",
   });
 
   if (!parsed.success) throw new Error("Dados inválidos");
@@ -133,6 +138,7 @@ export async function updateProduct(id: string, formData: FormData) {
       affiliateUrl: d.affiliateUrl,
       storeId: d.storeId,
       isPublished: d.isPublished ?? false,
+      isFeatured: d.isFeatured ?? false,
       publishedAt: d.isPublished ? new Date() : null,
     },
   });
@@ -143,8 +149,31 @@ export async function updateProduct(id: string, formData: FormData) {
     parseIds(formData, "badgeIds"),
   );
 
+  revalidatePath("/");
   revalidatePath("/produtos");
   revalidatePath(`/produtos/${d.slug}`);
+  revalidatePath("/admin/produtos");
+  redirect("/admin/produtos");
+}
+
+async function refreshStoreCounts() {
+  const stores = await prisma.store.findMany({ select: { id: true } });
+  for (const store of stores) {
+    const count = await prisma.product.count({
+      where: { storeId: store.id, isPublished: true },
+    });
+    await prisma.store.update({
+      where: { id: store.id },
+      data: { productCountCached: count },
+    });
+  }
+}
+
+export async function deleteProduct(id: string) {
+  await prisma.product.delete({ where: { id } });
+  await refreshStoreCounts();
+  revalidatePath("/");
+  revalidatePath("/produtos");
   revalidatePath("/admin/produtos");
   redirect("/admin/produtos");
 }
@@ -157,6 +186,16 @@ export async function toggleProductPublished(id: string, published: boolean) {
       publishedAt: published ? new Date() : null,
     },
   });
+  revalidatePath("/");
   revalidatePath("/admin/produtos");
   revalidatePath("/produtos");
+}
+
+export async function toggleProductFeatured(id: string, featured: boolean) {
+  await prisma.product.update({
+    where: { id },
+    data: { isFeatured: featured },
+  });
+  revalidatePath("/");
+  revalidatePath("/admin/produtos");
 }
