@@ -13,6 +13,17 @@ O código do projeto está pronto para instalar dependências assim que você ti
    npm install
    ```
 
+## Testes
+
+```bash
+npm test                  # unitários (Vitest)
+npm run test:integration  # APIs + CRUD com Postgres (docker compose up)
+npm run test:e2e          # Playwright (sobe next dev automaticamente)
+npm run test:all          # tudo
+```
+
+Pré-requisito para integração/e2e: `npm run docker:up`, `.env` com `DATABASE_URL`, `npm run db:seed`.
+
 ## Desenvolvimento local (Docker)
 
 ```bash
