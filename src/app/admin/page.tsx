@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { daysAgo } from "@/lib/dates";
 import { isDatabaseConfigured } from "@/lib/safe-db";
 
 export default async function AdminDashboardPage() {
@@ -22,7 +23,7 @@ export default async function AdminDashboardPage() {
     prisma.store.count({ where: { isActive: true } }),
     prisma.clickEvent.count({
       where: {
-        clickedAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+        clickedAt: { gte: daysAgo(7) },
       },
     }),
   ]);

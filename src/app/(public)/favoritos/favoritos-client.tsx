@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import type { ProductWithRelations } from "@/lib/catalog";
 
@@ -14,7 +14,7 @@ export function FavoritosClient() {
     const raw = localStorage.getItem(STORAGE_KEY);
     const ids: string[] = raw ? JSON.parse(raw) : [];
     if (ids.length === 0) {
-      setLoading(false);
+      startTransition(() => setLoading(false));
       return;
     }
     fetch("/api/favorites/resolve", {

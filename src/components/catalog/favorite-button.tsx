@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 
 const STORAGE_KEY = "namira_favorites";
 
@@ -10,7 +10,7 @@ export function FavoriteButton({ productId }: { productId: string }) {
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
     const ids: string[] = raw ? JSON.parse(raw) : [];
-    setActive(ids.includes(productId));
+    startTransition(() => setActive(ids.includes(productId)));
   }, [productId]);
 
   function toggle(e: React.MouseEvent) {

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { loginAdmin } from "@/actions/admin/auth";
 import { isAdminProtectionEnabled } from "@/lib/admin-auth";
 
@@ -39,9 +40,9 @@ export default async function AdminLoginPage({ searchParams }: Props) {
             Entrar
           </button>
         </form>
-        <a href="/" className="mt-4 block text-center text-xs text-zinc-500 no-underline hover:text-zinc-300">
+        <Link href="/" className="mt-4 block text-center text-xs text-zinc-500 no-underline hover:text-zinc-300">
           ← Voltar ao site
-        </a>
+        </Link>
       </div>
     </div>
   );

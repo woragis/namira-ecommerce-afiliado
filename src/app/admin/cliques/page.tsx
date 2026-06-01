@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { daysAgo } from "@/lib/dates";
 import { isDatabaseConfigured } from "@/lib/safe-db";
 
 export default async function AdminCliquesPage() {
@@ -7,7 +8,7 @@ export default async function AdminCliquesPage() {
     return <p className="text-zinc-400">Banco não configurado.</p>;
   }
 
-  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const since = daysAgo(30);
 
   const [total, recent, topProducts] = await Promise.all([
     prisma.clickEvent.count(),
