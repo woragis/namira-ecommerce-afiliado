@@ -6,6 +6,7 @@ Catálogo de produtos virais com links de afiliado (Shopee, Mercado Livre, Amazo
 
 - [Plano completo por fases](docs/plano-namira-achados.md)
 - [Setup quando npm está bloqueado](docs/setup-sem-npm.md)
+- [Deploy Supabase + Vercel](docs/deploy-supabase.md)
 
 ## Quick start (com rede para npm)
 

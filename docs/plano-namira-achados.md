@@ -96,7 +96,7 @@ Catálogo de afiliados em Next.js 16 + PostgreSQL (Supabase) + Storage (buckets 
 
 - [x] `/favoritos` (localStorage + API resolve)
 - [x] `/sobre`, `/como-funciona`, `/contato` via tabela `pages`
-- [ ] Sitemap e metadata por rota
+- [x] Sitemap e metadata por rota
 
 **Commit:** `feat(fase-6): favoritos e páginas estáticas`
 
@@ -109,7 +109,7 @@ Catálogo de afiliados em Next.js 16 + PostgreSQL (Supabase) + Storage (buckets 
 - [x] Layout `/admin` com sidebar
 - [x] CRUD lojas: nome, slug, cores, logo (URL Supabase `store-logos`)
 - [x] Preview do chip de filtro ativo/inativo
-- [ ] Upload direto ao bucket (Fase 9)
+- [x] Upload direto ao bucket (Fase 9)
 
 **Commit:** `feat(fase-7): admin crud de lojas com upload de logo`
 
@@ -120,9 +120,10 @@ Catálogo de afiliados em Next.js 16 + PostgreSQL (Supabase) + Storage (buckets 
 **Objetivo:** gerenciar catálogo e links de afiliado.
 
 - [x] CRUD produtos básico (affiliate_url, preços, imagem URL, loja, publicar)
-- [ ] CRUD categorias e badges
-- [ ] CRUD coleções + ordenação de produtos na coleção
-- [ ] Upload imagem em `product-images`
+- [x] CRUD categorias
+- [ ] CRUD badges (seed apenas; edição futura)
+- [x] CRUD coleções + produtos na coleção
+- [x] Upload imagem em `product-images`
 
 **Commit:** `feat(fase-8): admin produtos categorias e coleções`
 
@@ -132,10 +133,10 @@ Catálogo de afiliados em Next.js 16 + PostgreSQL (Supabase) + Storage (buckets 
 
 **Objetivo:** conteúdo do site e métricas.
 
-- [ ] Editor `site_settings` (hero, header top, footer)
-- [ ] CRUD `pages`
-- [ ] Dashboard cliques (`click_events`)
-- [ ] Proteção admin: `ADMIN_SECRET` + cookie (opcional)
+- [x] Editor `site_settings` (hero, header top, footer)
+- [x] CRUD `pages`
+- [x] Dashboard cliques (`click_events`)
+- [x] Proteção admin: `ADMIN_SECRET` + cookie
 
 **Commit:** `feat(fase-9): admin configurações páginas e analytics`
 
@@ -145,11 +146,11 @@ Catálogo de afiliados em Next.js 16 + PostgreSQL (Supabase) + Storage (buckets 
 
 **Objetivo:** performance e SEO.
 
-- [ ] ISR/revalidate nas listagens
-- [ ] `robots.txt`, `sitemap.xml`
-- [ ] Open Graph por produto
-- [ ] Tratamento de erros e empty states
-- [ ] README com setup Supabase (buckets, RLS, env)
+- [x] ISR/revalidate nas listagens (`revalidate = 60`)
+- [x] `robots.txt`, `sitemap.xml`
+- [x] Open Graph por produto
+- [x] Página 404 e empty states
+- [x] `docs/deploy-supabase.md`
 
 **Commit:** `feat(fase-10): seo isr e documentação de deploy`
 

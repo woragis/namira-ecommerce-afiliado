@@ -10,9 +10,19 @@ export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) return { title: "Produto não encontrado" };
+
+  const title = product.metaTitle ?? product.title;
+  const description = product.metaDescription ?? product.title;
+
   return {
-    title: product.metaTitle ?? product.title,
-    description: product.metaDescription ?? product.title,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      ...(product.imageUrl ? { images: [{ url: product.imageUrl }] } : {}),
+    },
   };
 }
 

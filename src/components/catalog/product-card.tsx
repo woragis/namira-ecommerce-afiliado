@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { FavoriteButton } from "@/components/catalog/favorite-button";
 import { formatPrice, type ProductWithRelations } from "@/lib/catalog";
 import type { BadgeStyle } from "@prisma/client";
 
@@ -54,6 +55,7 @@ export function ProductCard({ product }: Props) {
           >
             {store.shortLabel}
           </span>
+          <FavoriteButton productId={product.id} />
         </div>
         <div className="p-4">
           <div
