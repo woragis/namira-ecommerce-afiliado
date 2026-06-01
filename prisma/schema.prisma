@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Store {
+  id                 String    @id @default(uuid())
+  slug               String    @unique
+  name               String
+  shortLabel         String    @map("short_label")
+  logoUrl            String?   @map("logo_url")
+  logoStoragePath    String?   @map("logo_storage_path")
+  colorPrimary       String    @map("color_primary")
+  colorSecondary     String?   @map("color_secondary")
+  colorOnPrimary     String    @default("#ffffff") @map("color_on_primary")
+  brandPalette       Json?     @map("brand_palette")
+  sortOrder          Int       @default(0) @map("sort_order")
+  showInNav          Boolean   @default(true) @map("show_in_nav")
+  isActive           Boolean   @default(true) @map("is_active")
+  productCountCached Int       @default(0) @map("product_count_cached")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+  products           Product[]
+
+  @@map("stores")
+}
+
+model Category {
+  id          String            @id @default(uuid())
+  slug        String            @unique
+  name        String
+  icon        String?
+  description String?
+  sortOrder   Int               @default(0) @map("sort_order")
+  showInNav   Boolean           @default(true) @map("show_in_nav")
+  isActive    Boolean           @default(true) @map("is_active")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+  products    ProductCategory[]
+
+  @@map("categories")
+}
+
+model Badge {
+  id        String         @id @default(uuid())
+  slug      String         @unique
+  label     String
+  style     BadgeStyle     @default(VIRAL)
+  createdAt DateTime       @default(now()) @map("created_at")
+  products  ProductBadge[]
+
+  @@map("badges")
+}
+
+enum BadgeStyle {
+  VIRAL
+  OFF
+  NOVO
+}
+
+model Product {
+  id              String             @id @default(uuid())
+  slug            String             @unique
+  title           String
+  description     String?
+  imageUrl        String?            @map("image_url")
+  imageStoragePath String?           @map("image_storage_path")
+  imageAlt        String?            @map("image_alt")
+  priceCurrent    Decimal            @map("price_current") @db.Decimal(10, 2)
+  priceOriginal   Decimal?           @map("price_original") @db.Decimal(10, 2)
+  discountPercent Int?               @map("discount_percent")
+  affiliateUrl    String             @map("affiliate_url")
+  storeId         String             @map("store_id")
+  isPublished     Boolean            @default(false) @map("is_published")
+  isFeatured      Boolean            @default(false) @map("is_featured")
+  publishedAt     DateTime?          @map("published_at")
+  sortPriority    Int                @default(0) @map("sort_priority")
+  metaTitle       String?            @map("meta_title")
+  metaDescription String?            @map("meta_description")
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+  store           Store              @relation(fields: [storeId], references: [id])
+  categories      ProductCategory[]
+  badges          ProductBadge[]
+  collections     CollectionProduct[]
+  clicks          ClickEvent[]
+
+  @@index([storeId])
+  @@index([isPublished])
+  @@map("products")
+}
+
+model ProductCategory {
+  productId  String   @map("product_id")
+  categoryId String   @map("category_id")
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId])
+  @@map("product_categories")
+}
+
+model ProductBadge {
+  productId String  @map("product_id")
+  badgeId   String  @map("badge_id")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  badge     Badge   @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@id([productId, badgeId])
+  @@map("product_badges")
+}
+
+enum CollectionType {
+  SECTION
+  BANNER
+  HERO_FEATURED
+}
+
+model Collection {
+  id             String              @id @default(uuid())
+  slug           String              @unique
+  name           String
+  description    String?
+  type           CollectionType      @default(SECTION)
+  showOnHome     Boolean             @default(false) @map("show_on_home")
+  homeSortOrder  Int                 @default(0) @map("home_sort_order")
+  maxProducts    Int?                @map("max_products")
+  isActive       Boolean             @default(true) @map("is_active")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  products       CollectionProduct[]
+
+  @@map("collections")
+}
+
+model CollectionProduct {
+  collectionId String     @map("collection_id")
+  productId    String     @map("product_id")
+  sortOrder    Int        @default(0) @map("sort_order")
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, productId])
+  @@map("collection_products")
+}
+
+model SiteSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("site_settings")
+}
+
+model Page {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  title       String
+  body        String
+  isPublished Boolean  @default(true) @map("is_published")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("pages")
+}
+
+model ClickEvent {
+  id             String   @id @default(uuid())
+  productId      String   @map("product_id")
+  clickedAt      DateTime @default(now()) @map("clicked_at")
+  referrerPath   String?  @map("referrer_path")
+  userAgentHash  String?  @map("user_agent_hash")
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([clickedAt])
+  @@map("click_events")
+}
