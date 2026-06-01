@@ -34,8 +34,18 @@ export default async function AdminCliquesPage() {
 
   return (
     <div>
-      <h1 className="mb-2 text-2xl font-bold">Cliques em links de afiliado</h1>
-      <p className="mb-8 text-sm text-zinc-400">Total histórico: {total}</p>
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="mb-2 text-2xl font-bold">Cliques em links de afiliado</h1>
+          <p className="text-sm text-zinc-400">Total histórico: {total}</p>
+        </div>
+        <a
+          href="/api/admin/export/cliques?days=30"
+          className="rounded-lg border border-zinc-600 px-4 py-2 text-sm text-zinc-300 no-underline hover:border-zinc-400"
+        >
+          Exportar CSV (30 dias)
+        </a>
+      </div>
 
       <h2 className="mb-3 font-semibold">Top 10 (30 dias)</h2>
       <ul className="mb-10 space-y-2">

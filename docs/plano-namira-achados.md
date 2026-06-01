@@ -234,3 +234,16 @@ Cada fase = um ou mais commits atômicos na branch principal do repositório `na
 - [x] CRUD badges no admin (`/admin/badges`)
 - [x] Reordenar produtos na coleção (↑↓)
 - [x] `loading.tsx` e `error.tsx` no layout público
+
+---
+
+## Fase 12 — Importação, exportação e PWA
+
+- [x] Importar produtos via CSV (`/admin/produtos/importar`)
+- [x] Exportar produtos e cliques (CSV)
+- [x] Busca e filtro por loja no admin de produtos
+- [x] `manifest.ts` + ícone SVG (instalável no celular)
+- [x] Open Graph global + link Instagram no rodapé
+- [x] Template CSV em `public/templates/produtos-exemplo.csv`
+
+**Commit:** `feat(fase-12): import export csv pwa e melhorias admin`

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="NaMira Achados">
+  <rect width="512" height="512" rx="96" fill="#26215c"/>
+  <circle cx="256" cy="256" r="180" fill="#7f77dd" opacity="0.35"/>
+  <text x="256" y="220" text-anchor="middle" font-family="Georgia, serif" font-size="72" font-weight="700" fill="#534ab7">Na</text>
+  <text x="256" y="300" text-anchor="middle" font-family="Georgia, serif" font-size="72" font-weight="900" fill="#ef9f27">Mira</text>
+  <text x="256" y="380" text-anchor="middle" font-family="sans-serif" font-size="28" font-weight="500" fill="#afa9ec" letter-spacing="8">ACHADOS</text>
+</svg>

@@ -30,6 +30,7 @@ export default async function PublicLayout({
         stores={stores}
         categories={categories}
         disclaimer={settings.footer_disclaimer}
+        instagramUrl={settings.instagram_url}
       />
     </>
   );

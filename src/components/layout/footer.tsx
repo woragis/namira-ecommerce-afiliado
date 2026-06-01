@@ -6,9 +6,10 @@ type Props = {
   stores: StoreNavItem[];
   categories: CategoryNavItem[];
   disclaimer?: string;
+  instagramUrl?: string;
 };
 
-export function Footer({ stores, categories, disclaimer }: Props) {
+export function Footer({ stores, categories, disclaimer, instagramUrl }: Props) {
   return (
     <footer className="mt-auto bg-[var(--roxo-mais-escuro)] text-white">
       <div className="grid gap-10 px-6 py-12 md:grid-cols-4 md:px-10">
@@ -54,6 +55,18 @@ export function Footer({ stores, categories, disclaimer }: Props) {
             <li><Link href="/sobre" className="text-white/70 no-underline hover:text-white">Sobre</Link></li>
             <li><Link href="/como-funciona" className="text-white/70 no-underline hover:text-white">Como funciona</Link></li>
             <li><Link href="/contato" className="text-white/70 no-underline hover:text-white">Contato</Link></li>
+            {instagramUrl ? (
+              <li>
+                <a
+                  href={instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white/70 no-underline hover:text-white"
+                >
+                  Instagram
+                </a>
+              </li>
+            ) : null}
           </ul>
         </div>
       </div>
