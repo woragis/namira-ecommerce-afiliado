@@ -3,9 +3,15 @@ import { prisma } from "@/lib/db";
 import { isDatabaseConfigured } from "@/lib/safe-db";
 
 export default async function NovoProdutoPage() {
-  const stores = isDatabaseConfigured()
-    ? await prisma.store.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } })
-    : [];
+  if (!isDatabaseConfigured()) {
+    return <p className="text-zinc-400">Banco não configurado.</p>;
+  }
+
+  const [stores, categories, badges] = await Promise.all([
+    prisma.store.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),
+    prisma.category.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),
+    prisma.badge.findMany(),
+  ]);
 
   return (
     <div>
@@ -13,7 +19,7 @@ export default async function NovoProdutoPage() {
       {stores.length === 0 ? (
         <p className="text-zinc-400">Cadastre uma loja antes de criar produtos.</p>
       ) : (
-        <ProductForm stores={stores} />
+        <ProductForm stores={stores} categories={categories} badges={badges} />
       )}
     </div>
   );

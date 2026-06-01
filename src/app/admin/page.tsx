@@ -34,7 +34,7 @@ export default async function AdminDashboardPage() {
         <Stat label="Produtos" value={products} href="/admin/produtos" />
         <Stat label="Publicados" value={published} href="/admin/produtos" />
         <Stat label="Lojas ativas" value={stores} href="/admin/lojas" />
-        <Stat label="Cliques (7d)" value={clicks} href="#" />
+        <Stat label="Cliques (7d)" value={clicks} href="/admin/cliques" />
       </div>
     </div>
   );

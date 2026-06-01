@@ -33,12 +33,17 @@ export default async function AdminProdutosPage() {
               <th className="p-3">Loja</th>
               <th className="p-3">Preço</th>
               <th className="p-3">Publicado</th>
+              <th className="p-3" />
             </tr>
           </thead>
           <tbody>
             {products.map((p) => (
               <tr key={p.id} className="border-t border-zinc-800">
-                <td className="p-3 max-w-xs truncate">{p.title}</td>
+                <td className="p-3 max-w-xs truncate">
+                  <Link href={`/admin/produtos/${p.id}`} className="text-white no-underline hover:text-amber-400">
+                    {p.title}
+                  </Link>
+                </td>
                 <td className="p-3" style={{ color: p.store.colorPrimary }}>
                   {p.store.name}
                 </td>
@@ -58,6 +63,11 @@ export default async function AdminProdutosPage() {
                       {p.isPublished ? "Sim" : "Não"}
                     </button>
                   </form>
+                </td>
+                <td className="p-3 text-right">
+                  <Link href={`/produtos/${p.slug}`} className="text-xs text-zinc-500 no-underline hover:text-amber-400">
+                    Ver
+                  </Link>
                 </td>
               </tr>
             ))}
