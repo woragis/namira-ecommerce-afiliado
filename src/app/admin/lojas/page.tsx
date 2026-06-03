@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { AdminDbSetup } from "@/components/admin/admin-db-setup";
 import { prisma } from "@/lib/db";
+import { isNamiraSchemaReady, safeDbQuery } from "@/lib/admin-db";
 import { isDatabaseConfigured } from "@/lib/safe-db";
 import { deleteStore } from "@/actions/admin/stores";
 
@@ -8,7 +10,19 @@ export default async function AdminLojasPage() {
     return <p className="text-zinc-400">Banco não configurado.</p>;
   }
 
-  const stores = await prisma.store.findMany({ orderBy: { sortOrder: "asc" } });
+  if (!(await isNamiraSchemaReady())) {
+    return (
+      <div>
+        <h1 className="mb-6 text-2xl font-bold">Lojas</h1>
+        <AdminDbSetup />
+      </div>
+    );
+  }
+
+  const stores = await safeDbQuery(
+    () => prisma.store.findMany({ orderBy: { sortOrder: "asc" } }),
+    [],
+  );
 
   return (
     <div>

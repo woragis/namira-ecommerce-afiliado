@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { AdminDbSetup } from "@/components/admin/admin-db-setup";
 import { prisma } from "@/lib/db";
+import { isNamiraSchemaReady, safeDbQuery } from "@/lib/admin-db";
 import { isDatabaseConfigured } from "@/lib/safe-db";
 import {
   toggleProductFeatured,
@@ -16,6 +18,15 @@ export default async function AdminProdutosPage({ searchParams }: Props) {
     return <p className="text-zinc-400">Banco não configurado.</p>;
   }
 
+  if (!(await isNamiraSchemaReady())) {
+    return (
+      <div>
+        <h1 className="mb-6 text-2xl font-bold">Produtos</h1>
+        <AdminDbSetup />
+      </div>
+    );
+  }
+
   const { q, loja } = await searchParams;
 
   const where: Prisma.ProductWhereInput = {};
@@ -27,13 +38,24 @@ export default async function AdminProdutosPage({ searchParams }: Props) {
   }
 
   const [products, stores] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      include: { store: true },
-      orderBy: { updatedAt: "desc" },
-      take: 200,
-    }),
-    prisma.store.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),
+    safeDbQuery(
+      () =>
+        prisma.product.findMany({
+          where,
+          include: { store: true },
+          orderBy: { updatedAt: "desc" },
+          take: 200,
+        }),
+      [],
+    ),
+    safeDbQuery(
+      () =>
+        prisma.store.findMany({
+          where: { isActive: true },
+          orderBy: { sortOrder: "asc" },
+        }),
+      [],
+    ),
   ]);
 
   return (

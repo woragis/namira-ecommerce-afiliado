@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { AdminDbSetup } from "@/components/admin/admin-db-setup";
 import { prisma } from "@/lib/db";
+import { isNamiraSchemaReady, safeDbQuery } from "@/lib/admin-db";
 import { daysAgo } from "@/lib/dates";
 import { isDatabaseConfigured } from "@/lib/safe-db";
 
@@ -9,23 +11,34 @@ export default async function AdminDashboardPage() {
       <div>
         <h1 className="mb-4 text-2xl font-bold">Dashboard</h1>
         <p className="text-zinc-400">
-          Configure <code className="text-amber-400">DATABASE_URL</code> no{" "}
-          <code>.env</code> e rode <code>npm install && npm run db:push && npm run db:seed</code>.
-          Veja <code>docs/setup-sem-npm.md</code>.
+          Configure <code className="text-amber-400">DATABASE_URL</code> na
+          Vercel.
         </p>
       </div>
     );
   }
 
+  const schemaReady = await isNamiraSchemaReady();
+  if (!schemaReady) {
+    return (
+      <div>
+        <h1 className="mb-6 text-2xl font-bold">Dashboard</h1>
+        <AdminDbSetup />
+      </div>
+    );
+  }
+
   const [products, published, stores, clicks] = await Promise.all([
-    prisma.product.count(),
-    prisma.product.count({ where: { isPublished: true } }),
-    prisma.store.count({ where: { isActive: true } }),
-    prisma.clickEvent.count({
-      where: {
-        clickedAt: { gte: daysAgo(7) },
-      },
-    }),
+    safeDbQuery(() => prisma.product.count(), 0),
+    safeDbQuery(() => prisma.product.count({ where: { isPublished: true } }), 0),
+    safeDbQuery(() => prisma.store.count({ where: { isActive: true } }), 0),
+    safeDbQuery(
+      () =>
+        prisma.clickEvent.count({
+          where: { clickedAt: { gte: daysAgo(7) } },
+        }),
+      0,
+    ),
   ]);
 
   return (

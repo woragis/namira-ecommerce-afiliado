@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+
 /**
  * Evita crash quando DATABASE_URL não está configurado ou o schema ainda não foi aplicado.
  */
@@ -13,17 +15,27 @@ const UNAVAILABLE_CODES = new Set([
 ]);
 
 export function isPrismaUnavailableError(error: unknown): boolean {
+  if (error instanceof Prisma.PrismaClientInitializationError) return true;
+
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (UNAVAILABLE_CODES.has(error.code)) return true;
+    if (error.code === "P2021" || error.code === "P2022") return true;
+  }
+
   if (error instanceof Error) {
-    if (error.name === "PrismaClientInitializationError") return true;
     const msg = error.message.toLowerCase();
     if (
       msg.includes("can't reach database") ||
       msg.includes("does not exist") ||
-      msg.includes("connection")
+      msg.includes("relation") ||
+      msg.includes("prepared statement") ||
+      msg.includes("connection") ||
+      msg.includes("server has closed")
     ) {
       return true;
     }
   }
+
   return (
     typeof error === "object" &&
     error !== null &&
