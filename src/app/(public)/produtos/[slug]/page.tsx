@@ -1,8 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { WhatsAppShareButton } from "@/components/catalog/whatsapp-share-button";
+import { hashUserAgent, recordProductView } from "@/lib/analytics";
 import { formatPrice, getProductBySlug, getProducts } from "@/lib/catalog";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -31,6 +33,14 @@ export default async function ProdutoDetalhePage({ params }: Props) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) notFound();
+
+  const hdrs = await headers();
+  const ua = hdrs.get("user-agent") ?? "";
+  void recordProductView(
+    product.id,
+    `/produtos/${slug}`,
+    hashUserAgent(ua),
+  );
 
   const store = product.store;
   const related = await getProducts({
