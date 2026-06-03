@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  getPublishedProductForRedirect,
-  recordProductClick,
-} from "@/lib/catalog";
+import { hashUserAgent, recordProductClick } from "@/lib/analytics";
+import { getPublishedProductForRedirect } from "@/lib/catalog";
 
 export async function GET(
   request: NextRequest,
@@ -18,11 +16,7 @@ export async function GET(
   const referrer = request.headers.get("referer") ?? undefined;
   const ua = request.headers.get("user-agent") ?? "";
 
-  await recordProductClick(
-    product.id,
-    referrer,
-    ua ? Buffer.from(ua).toString("base64").slice(0, 64) : undefined,
-  );
+  await recordProductClick(product.id, referrer, hashUserAgent(ua));
 
   return NextResponse.redirect(product.affiliateUrl, { status: 302 });
 }

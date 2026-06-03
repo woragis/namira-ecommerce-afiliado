@@ -89,6 +89,8 @@ model Product {
   badges          ProductBadge[]
   collections     CollectionProduct[]
   clicks          ClickEvent[]
+  views           ProductViewEvent[]
+  impressions     ProductImpressionEvent[]
 
   @@index([storeId])
   @@index([isPublished])
@@ -180,4 +182,30 @@ model ClickEvent {
   @@index([productId])
   @@index([clickedAt])
   @@map("click_events")
+}
+
+model ProductViewEvent {
+  id            String   @id @default(uuid())
+  productId     String   @map("product_id")
+  viewedAt      DateTime @default(now()) @map("viewed_at")
+  sourcePath    String?  @map("source_path")
+  userAgentHash String?  @map("user_agent_hash")
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([viewedAt])
+  @@map("product_view_events")
+}
+
+model ProductImpressionEvent {
+  id            String   @id @default(uuid())
+  productId     String   @map("product_id")
+  impressedAt   DateTime @default(now()) @map("impressed_at")
+  listPath      String?  @map("list_path")
+  userAgentHash String?  @map("user_agent_hash")
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([impressedAt])
+  @@map("product_impression_events")
 }

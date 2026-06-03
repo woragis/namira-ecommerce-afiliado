@@ -265,19 +265,7 @@ export async function getPublishedProductForRedirect(id: string) {
   );
 }
 
-export async function recordProductClick(
-  productId: string,
-  referrerPath?: string,
-  userAgentHash?: string,
-) {
-  return safeDbQuery(
-    () =>
-      prisma.clickEvent.create({
-        data: { productId, referrerPath, userAgentHash },
-      }),
-    null,
-  );
-}
+export { recordProductClick } from "@/lib/analytics";
 
 export function formatPrice(value: number | string): string {
   const n = typeof value === "string" ? parseFloat(value) : value;
