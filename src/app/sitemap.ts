@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/db";
-import { isDatabaseConfigured } from "@/lib/safe-db";
+import { isDatabaseConfigured, safeDbQuery } from "@/lib/safe-db";
 
 const BASE =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
@@ -18,24 +18,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   if (!isDatabaseConfigured()) return staticRoutes;
 
-  const [products, stores, categories, collections] = await Promise.all([
-    prisma.product.findMany({
-      where: { isPublished: true },
-      select: { slug: true, updatedAt: true },
-    }),
-    prisma.store.findMany({
-      where: { isActive: true },
-      select: { slug: true, updatedAt: true },
-    }),
-    prisma.category.findMany({
-      where: { isActive: true },
-      select: { slug: true, updatedAt: true },
-    }),
-    prisma.collection.findMany({
-      where: { isActive: true },
-      select: { slug: true, updatedAt: true },
-    }),
-  ]);
+  const [products, stores, categories, collections] = await safeDbQuery(
+    () =>
+      Promise.all([
+        prisma.product.findMany({
+          where: { isPublished: true },
+          select: { slug: true, updatedAt: true },
+        }),
+        prisma.store.findMany({
+          where: { isActive: true },
+          select: { slug: true, updatedAt: true },
+        }),
+        prisma.category.findMany({
+          where: { isActive: true },
+          select: { slug: true, updatedAt: true },
+        }),
+        prisma.collection.findMany({
+          where: { isActive: true },
+          select: { slug: true, updatedAt: true },
+        }),
+      ]),
+    [[], [], [], []] as [
+      { slug: string; updatedAt: Date }[],
+      { slug: string; updatedAt: Date }[],
+      { slug: string; updatedAt: Date }[],
+      { slug: string; updatedAt: Date }[],
+    ],
+  );
 
   return [
     ...staticRoutes,

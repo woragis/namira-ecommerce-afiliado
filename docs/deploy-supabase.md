@@ -51,11 +51,19 @@ npx prisma db push
 npm run db:seed
 ```
 
+Na **Vercel**, o `npm run build` já executa `prisma db push` automaticamente quando `DATABASE_URL` está definido (cria as tabelas no primeiro deploy).
+
+Depois do primeiro deploy bem-sucedido, rode o seed **uma vez** apontando para o banco de produção:
+
+```bash
+DATABASE_URL="..." DIRECT_URL="..." npm run db:seed
+```
+
 ## 5. Vercel
 
 - Importar repositório `namira`
-- Adicionar todas as env vars
-- Build command: `npm run build` (já roda `prisma generate`)
+- Adicionar todas as env vars (**obrigatório:** `DATABASE_URL`, `DIRECT_URL`, `ADMIN_SECRET`, `NEXT_PUBLIC_SITE_URL`)
+- Build command: `npm run build` (gera Prisma Client, aplica schema, depois `next build`)
 
 ## 6. Admin
 

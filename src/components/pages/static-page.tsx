@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { isDatabaseConfigured } from "@/lib/safe-db";
+import { safeDbQuery } from "@/lib/safe-db";
 
 const fallbacks: Record<string, { title: string; body: string }> = {
   sobre: {
@@ -20,12 +20,13 @@ export async function StaticPage({ slug }: { slug: string }) {
   let title = fallbacks[slug]?.title ?? slug;
   let body = fallbacks[slug]?.body ?? "";
 
-  if (isDatabaseConfigured()) {
-    const page = await prisma.page.findUnique({ where: { slug } });
-    if (page?.isPublished) {
-      title = page.title;
-      body = page.body;
-    }
+  const page = await safeDbQuery(
+    () => prisma.page.findUnique({ where: { slug } }),
+    null,
+  );
+  if (page?.isPublished) {
+    title = page.title;
+    body = page.body;
   }
 
   return (

@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { isDatabaseConfigured } from "@/lib/safe-db";
+import { safeDbQuery } from "@/lib/safe-db";
 
 export const productInclude = {
   store: true,
@@ -40,54 +40,71 @@ const defaultSettings: Record<string, string> = {
 };
 
 export async function getSiteSettings(): Promise<Record<string, string>> {
-  if (!isDatabaseConfigured()) return defaultSettings;
-  const rows = await prisma.siteSetting.findMany();
-  return { ...defaultSettings, ...Object.fromEntries(rows.map((r) => [r.key, r.value])) };
+  return safeDbQuery(async () => {
+    const rows = await prisma.siteSetting.findMany();
+    return {
+      ...defaultSettings,
+      ...Object.fromEntries(rows.map((r) => [r.key, r.value])),
+    };
+  }, defaultSettings);
 }
 
 export async function getSiteSetting(
   key: string,
   fallback = "",
 ): Promise<string> {
-  const row = await prisma.siteSetting.findUnique({ where: { key } });
-  return row?.value ?? fallback;
+  return safeDbQuery(async () => {
+    const row = await prisma.siteSetting.findUnique({ where: { key } });
+    return row?.value ?? fallback;
+  }, fallback);
 }
 
 export async function getActiveStores() {
-  if (!isDatabaseConfigured()) return [];
-  return prisma.store.findMany({
-    where: { isActive: true },
-    orderBy: { sortOrder: "asc" },
-  });
+  return safeDbQuery(
+    () =>
+      prisma.store.findMany({
+        where: { isActive: true },
+        orderBy: { sortOrder: "asc" },
+      }),
+    [],
+  );
 }
 
 export async function getBadges() {
-  if (!isDatabaseConfigured()) return [];
-  return prisma.badge.findMany({ orderBy: { label: "asc" } });
+  return safeDbQuery(
+    () => prisma.badge.findMany({ orderBy: { label: "asc" } }),
+    [],
+  );
 }
 
 export async function getNavCategories() {
-  if (!isDatabaseConfigured()) return [];
-  return prisma.category.findMany({
-    where: { isActive: true, showInNav: true },
-    orderBy: { sortOrder: "asc" },
-  });
+  return safeDbQuery(
+    () =>
+      prisma.category.findMany({
+        where: { isActive: true, showInNav: true },
+        orderBy: { sortOrder: "asc" },
+      }),
+    [],
+  );
 }
 
 export async function getHomeCollections() {
-  if (!isDatabaseConfigured()) return [];
-  return prisma.collection.findMany({
-    where: { isActive: true, showOnHome: true },
-    orderBy: { homeSortOrder: "asc" },
-    include: {
-      products: {
-        orderBy: { sortOrder: "asc" },
+  return safeDbQuery(
+    () =>
+      prisma.collection.findMany({
+        where: { isActive: true, showOnHome: true },
+        orderBy: { homeSortOrder: "asc" },
         include: {
-          product: { include: productInclude },
+          products: {
+            orderBy: { sortOrder: "asc" },
+            include: {
+              product: { include: productInclude },
+            },
+          },
         },
-      },
-    },
-  });
+      }),
+    [],
+  );
 }
 
 function buildProductWhere(filters: CatalogFilters): Prisma.ProductWhereInput {
@@ -147,80 +164,105 @@ function buildProductOrderBy(
   }
 }
 
+const emptyCatalog = {
+  items: [] as ProductWithRelations[],
+  total: 0,
+  page: 1,
+  limit: 24,
+  totalPages: 0,
+};
+
 export async function getProducts(filters: CatalogFilters = {}) {
-  if (!isDatabaseConfigured()) {
-    return { items: [], total: 0, page: 1, limit: 24, totalPages: 0 };
-  }
-  const page = Math.max(1, filters.page ?? 1);
-  const limit = Math.min(48, Math.max(1, filters.limit ?? 24));
-  const skip = (page - 1) * limit;
-  const where = buildProductWhere(filters);
+  return safeDbQuery(async () => {
+    const page = Math.max(1, filters.page ?? 1);
+    const limit = Math.min(48, Math.max(1, filters.limit ?? 24));
+    const skip = (page - 1) * limit;
+    const where = buildProductWhere(filters);
 
-  const [items, total] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      include: productInclude,
-      orderBy: buildProductOrderBy(filters.sort),
-      skip,
-      take: limit,
-    }),
-    prisma.product.count({ where }),
-  ]);
+    const [items, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        include: productInclude,
+        orderBy: buildProductOrderBy(filters.sort),
+        skip,
+        take: limit,
+      }),
+      prisma.product.count({ where }),
+    ]);
 
-  return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
+    return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
+  }, emptyCatalog);
 }
 
 export async function getFeaturedProducts(limit = 8) {
-  if (!isDatabaseConfigured()) return [];
-  return prisma.product.findMany({
-    where: { isPublished: true, isFeatured: true },
-    include: productInclude,
-    orderBy: [{ sortPriority: "desc" }, { publishedAt: "desc" }],
-    take: limit,
-  });
+  return safeDbQuery(
+    () =>
+      prisma.product.findMany({
+        where: { isPublished: true, isFeatured: true },
+        include: productInclude,
+        orderBy: [{ sortPriority: "desc" }, { publishedAt: "desc" }],
+        take: limit,
+      }),
+    [],
+  );
 }
 
 export async function getProductBySlug(slug: string) {
-  if (!isDatabaseConfigured()) return null;
-  return prisma.product.findFirst({
-    where: { slug, isPublished: true },
-    include: productInclude,
-  });
+  return safeDbQuery(
+    () =>
+      prisma.product.findFirst({
+        where: { slug, isPublished: true },
+        include: productInclude,
+      }),
+    null,
+  );
 }
 
 export async function getStoreBySlug(slug: string) {
-  if (!isDatabaseConfigured()) return null;
-  return prisma.store.findFirst({
-    where: { slug, isActive: true },
-  });
+  return safeDbQuery(
+    () =>
+      prisma.store.findFirst({
+        where: { slug, isActive: true },
+      }),
+    null,
+  );
 }
 
 export async function getCollectionBySlug(slug: string) {
-  if (!isDatabaseConfigured()) return null;
-  return prisma.collection.findFirst({
-    where: { slug, isActive: true },
-    include: {
-      products: {
-        orderBy: { sortOrder: "asc" },
-        include: { product: { include: productInclude } },
-      },
-    },
-  });
+  return safeDbQuery(
+    () =>
+      prisma.collection.findFirst({
+        where: { slug, isActive: true },
+        include: {
+          products: {
+            orderBy: { sortOrder: "asc" },
+            include: { product: { include: productInclude } },
+          },
+        },
+      }),
+    null,
+  );
 }
 
 export async function getCategoryBySlug(slug: string) {
-  if (!isDatabaseConfigured()) return null;
-  return prisma.category.findFirst({
-    where: { slug, isActive: true },
-  });
+  return safeDbQuery(
+    () =>
+      prisma.category.findFirst({
+        where: { slug, isActive: true },
+      }),
+    null,
+  );
 }
 
 export async function getPublishedProductForRedirect(id: string) {
-  if (!isDatabaseConfigured()) return null;
-  return prisma.product.findFirst({
-    where: { id, isPublished: true },
-    select: { id: true, affiliateUrl: true, title: true },
-  });
+  return safeDbQuery(
+    () =>
+      prisma.product.findFirst({
+        where: { id, isPublished: true },
+        select: { id: true, affiliateUrl: true, title: true },
+      }),
+    null,
+  );
 }
 
 export async function recordProductClick(
@@ -228,10 +270,13 @@ export async function recordProductClick(
   referrerPath?: string,
   userAgentHash?: string,
 ) {
-  if (!isDatabaseConfigured()) return null;
-  return prisma.clickEvent.create({
-    data: { productId, referrerPath, userAgentHash },
-  });
+  return safeDbQuery(
+    () =>
+      prisma.clickEvent.create({
+        data: { productId, referrerPath, userAgentHash },
+      }),
+    null,
+  );
 }
 
 export function formatPrice(value: number | string): string {
