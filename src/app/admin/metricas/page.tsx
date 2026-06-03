@@ -1,28 +1,53 @@
 import Link from "next/link";
+import { KpiGrid } from "@/components/admin/metrics/kpi-grid";
+import { MetricsBreakdown } from "@/components/admin/metrics/metrics-breakdown";
+import { MetricsDailyChart } from "@/components/admin/metrics/metrics-daily-chart";
+import { MetricsFunnel } from "@/components/admin/metrics/metrics-funnel";
+import { MetricsProductsTable } from "@/components/admin/metrics/metrics-products-table";
+import { PeriodSelector } from "@/components/admin/metrics/period-selector";
 import { prisma } from "@/lib/db";
 import {
-  ctrAffiliateClicks,
-  ctrDetailViews,
   daysAgo,
-  getMetricTotals,
+  getDailyMetricsSeries,
+  getMetricsComparison,
+  getProductsWithoutClicks,
+  getTopListPaths,
   getTopProductsByMetrics,
+  getTopStoresByClicks,
+  parsePeriodDays,
 } from "@/lib/analytics-stats";
 import { isDatabaseConfigured } from "@/lib/safe-db";
 
-export default async function AdminMetricasPage() {
+type Props = {
+  searchParams: Promise<{ days?: string }>;
+};
+
+export default async function AdminMetricasPage({ searchParams }: Props) {
   if (!isDatabaseConfigured()) {
     return <p className="text-zinc-400">Banco não configurado.</p>;
   }
 
-  const since7 = daysAgo(7);
-  const since30 = daysAgo(30);
+  const params = await searchParams;
+  const days = parsePeriodDays(params.days);
+  const since = daysAgo(days);
 
-  const [totals7, totals30, top, recentClicks] = await Promise.all([
-    getMetricTotals(since7),
-    getMetricTotals(since30),
-    getTopProductsByMetrics(since30, 10),
+  const [
+    comparison,
+    series,
+    topProducts,
+    staleProducts,
+    listPaths,
+    topStores,
+    recentClicks,
+  ] = await Promise.all([
+    getMetricsComparison(days),
+    getDailyMetricsSeries(days),
+    getTopProductsByMetrics(since, 15),
+    getProductsWithoutClicks(since, 20, 8),
+    getTopListPaths(since, 10),
+    getTopStoresByClicks(since, 8),
     prisma.clickEvent.findMany({
-      take: 15,
+      take: 12,
       orderBy: { clickedAt: "desc" },
       include: { product: { select: { title: true, slug: true } } },
     }),
@@ -34,112 +59,82 @@ export default async function AdminMetricasPage() {
         <div>
           <h1 className="mb-2 text-2xl font-bold">Métricas do catálogo</h1>
           <p className="text-sm text-zinc-400">
-            Funil: impressão (card) → visualização (detalhe) → clique (afiliado)
+            Funil: impressão → visualização (PDP) → clique de afiliado
           </p>
         </div>
-        <a
-          href="/api/admin/export/metricas?days=30"
-          className="rounded-lg border border-zinc-600 px-4 py-2 text-sm text-zinc-300 no-underline hover:border-zinc-400"
-        >
-          Exportar CSV (30 dias)
-        </a>
+        <div className="flex flex-wrap items-center gap-3">
+          <PeriodSelector days={days} />
+          <a
+            href={`/api/admin/export/metricas?days=${days}`}
+            className="rounded-lg border border-zinc-600 px-4 py-2 text-sm text-zinc-300 no-underline hover:border-zinc-400"
+          >
+            Exportar CSV
+          </a>
+        </div>
       </div>
 
-      <section className="mb-10 grid gap-4 sm:grid-cols-3">
-        <MetricCard label="Impressões (7d)" value={totals7.impressions} />
-        <MetricCard label="Visualizações PDP (7d)" value={totals7.views} />
-        <MetricCard label="Cliques afiliado (7d)" value={totals7.clicks} />
-      </section>
+      <div className="mb-10">
+        <KpiGrid
+          label={`Últimos ${days} dias vs ${days} dias anteriores`}
+          current={comparison.current}
+          previous={comparison.previous}
+        />
+      </div>
 
-      <p className="mb-10 text-sm text-zinc-500">
-        30 dias: {totals30.impressions} impressões · {totals30.views} visualizações ·{" "}
-        {totals30.clicks} cliques
-      </p>
+      <div className="mb-10">
+        <MetricsFunnel totals={comparison.current} />
+      </div>
 
-      <h2 className="mb-3 font-semibold">Top produtos (30 dias)</h2>
-      <div className="mb-10 overflow-x-auto rounded-xl border border-zinc-800">
-        <table className="w-full min-w-[640px] text-left text-sm">
+      <div className="mb-10">
+        <MetricsDailyChart series={series} days={days} />
+      </div>
+
+      <div className="mb-10">
+        <MetricsBreakdown listPaths={listPaths} stores={topStores} />
+      </div>
+
+      <div className="mb-10">
+        <MetricsProductsTable title="Top produtos" rows={topProducts} />
+      </div>
+
+      {staleProducts.length > 0 ? (
+        <div className="mb-10">
+          <MetricsProductsTable
+            title="Atenção: impressões sem clique"
+            rows={staleProducts}
+            showAlert
+          />
+        </div>
+      ) : null}
+
+      <section>
+        <h2 className="mb-3 font-semibold">Últimos cliques de afiliado</h2>
+        <table className="w-full text-left text-sm">
           <thead className="text-zinc-400">
             <tr>
-              <th className="p-3">Produto</th>
-              <th className="p-3">Impressões</th>
-              <th className="p-3">PDP</th>
-              <th className="p-3">Cliques</th>
-              <th className="p-3">CTR imp→PDP</th>
-              <th className="p-3">CTR PDP→clique</th>
+              <th className="p-2">Quando</th>
+              <th className="p-2">Produto</th>
             </tr>
           </thead>
           <tbody>
-            {top.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="p-4 text-zinc-500">
-                  Sem dados no período.
+            {recentClicks.map((c) => (
+              <tr key={c.id} className="border-t border-zinc-800">
+                <td className="p-2 text-zinc-400">
+                  {c.clickedAt.toLocaleString("pt-BR")}
+                </td>
+                <td className="p-2">
+                  <Link
+                    href={`/produtos/${c.product.slug}`}
+                    className="text-amber-400 no-underline"
+                  >
+                    {c.product.title}
+                  </Link>
                 </td>
               </tr>
-            ) : (
-              top.map((row) => (
-                <tr key={row.productId} className="border-t border-zinc-800">
-                  <td className="p-3">
-                    <Link
-                      href={`/produtos/${row.slug}`}
-                      className="text-amber-400 no-underline hover:underline"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {row.title}
-                    </Link>
-                  </td>
-                  <td className="p-3">{row.impressions}</td>
-                  <td className="p-3">{row.views}</td>
-                  <td className="p-3 text-amber-400">{row.clicks}</td>
-                  <td className="p-3 text-zinc-400">
-                    {ctrDetailViews(row.impressions, row.views)}
-                  </td>
-                  <td className="p-3 text-zinc-400">
-                    {ctrAffiliateClicks(row.views, row.clicks)}
-                  </td>
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
-      </div>
-
-      <h2 className="mb-3 font-semibold">Últimos cliques de afiliado</h2>
-      <table className="w-full text-left text-sm">
-        <thead className="text-zinc-400">
-          <tr>
-            <th className="p-2">Quando</th>
-            <th className="p-2">Produto</th>
-          </tr>
-        </thead>
-        <tbody>
-          {recentClicks.map((c) => (
-            <tr key={c.id} className="border-t border-zinc-800">
-              <td className="p-2 text-zinc-400">
-                {c.clickedAt.toLocaleString("pt-BR")}
-              </td>
-              <td className="p-2">
-                <Link
-                  href={`/produtos/${c.product.slug}`}
-                  className="text-amber-400 no-underline"
-                >
-                  {c.product.title}
-                </Link>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function MetricCard({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
-      <div className="text-3xl font-bold text-white">{value}</div>
-      <div className="text-sm text-zinc-400">{label}</div>
+      </section>
     </div>
   );
 }

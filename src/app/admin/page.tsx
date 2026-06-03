@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { AdminDbSetup } from "@/components/admin/admin-db-setup";
+import { DashboardOverview } from "@/components/admin/metrics/dashboard-overview";
 import { prisma } from "@/lib/db";
 import { isNamiraSchemaReady, safeDbQuery } from "@/lib/admin-db";
+import {
+  getCatalogHealth,
+  getMetricTotals,
+} from "@/lib/analytics-stats";
 import { daysAgo } from "@/lib/dates";
 import { isDatabaseConfigured } from "@/lib/safe-db";
 
@@ -29,45 +34,31 @@ export default async function AdminDashboardPage() {
   }
 
   const since7 = daysAgo(7);
-  const [products, published, stores, impressions, views, clicks] =
-    await Promise.all([
-      safeDbQuery(() => prisma.product.count(), 0),
-      safeDbQuery(() => prisma.product.count({ where: { isPublished: true } }), 0),
-      safeDbQuery(() => prisma.store.count({ where: { isActive: true } }), 0),
-      safeDbQuery(
-        () =>
-          prisma.productImpressionEvent.count({
-            where: { impressedAt: { gte: since7 } },
-          }),
-        0,
-      ),
-      safeDbQuery(
-        () =>
-          prisma.productViewEvent.count({
-            where: { viewedAt: { gte: since7 } },
-          }),
-        0,
-      ),
-      safeDbQuery(
-        () =>
-          prisma.clickEvent.count({
-            where: { clickedAt: { gte: since7 } },
-          }),
-        0,
-      ),
-    ]);
+  const [products, published, stores, weekTotals, health] = await Promise.all([
+    safeDbQuery(() => prisma.product.count(), 0),
+    safeDbQuery(() => prisma.product.count({ where: { isPublished: true } }), 0),
+    safeDbQuery(() => prisma.store.count({ where: { isActive: true } }), 0),
+    safeDbQuery(() => getMetricTotals(since7), {
+      impressions: 0,
+      views: 0,
+      clicks: 0,
+    }),
+    safeDbQuery(() => getCatalogHealth(30), {
+      publishedWithoutClicks: 0,
+      draftProducts: 0,
+      weakFeatured: 0,
+    }),
+  ]);
 
   return (
     <div>
       <h1 className="mb-8 text-2xl font-bold">Dashboard</h1>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Stat label="Produtos" value={products} href="/admin/produtos" />
         <Stat label="Publicados" value={published} href="/admin/produtos" />
         <Stat label="Lojas ativas" value={stores} href="/admin/lojas" />
-        <Stat label="Impressões (7d)" value={impressions} href="/admin/metricas" />
-        <Stat label="Visualizações (7d)" value={views} href="/admin/metricas" />
-        <Stat label="Cliques (7d)" value={clicks} href="/admin/metricas" />
       </div>
+      <DashboardOverview totals={weekTotals} health={health} days={7} />
     </div>
   );
 }
