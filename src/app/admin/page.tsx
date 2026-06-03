@@ -28,27 +28,45 @@ export default async function AdminDashboardPage() {
     );
   }
 
-  const [products, published, stores, clicks] = await Promise.all([
-    safeDbQuery(() => prisma.product.count(), 0),
-    safeDbQuery(() => prisma.product.count({ where: { isPublished: true } }), 0),
-    safeDbQuery(() => prisma.store.count({ where: { isActive: true } }), 0),
-    safeDbQuery(
-      () =>
-        prisma.clickEvent.count({
-          where: { clickedAt: { gte: daysAgo(7) } },
-        }),
-      0,
-    ),
-  ]);
+  const since7 = daysAgo(7);
+  const [products, published, stores, impressions, views, clicks] =
+    await Promise.all([
+      safeDbQuery(() => prisma.product.count(), 0),
+      safeDbQuery(() => prisma.product.count({ where: { isPublished: true } }), 0),
+      safeDbQuery(() => prisma.store.count({ where: { isActive: true } }), 0),
+      safeDbQuery(
+        () =>
+          prisma.productImpressionEvent.count({
+            where: { impressedAt: { gte: since7 } },
+          }),
+        0,
+      ),
+      safeDbQuery(
+        () =>
+          prisma.productViewEvent.count({
+            where: { viewedAt: { gte: since7 } },
+          }),
+        0,
+      ),
+      safeDbQuery(
+        () =>
+          prisma.clickEvent.count({
+            where: { clickedAt: { gte: since7 } },
+          }),
+        0,
+      ),
+    ]);
 
   return (
     <div>
       <h1 className="mb-8 text-2xl font-bold">Dashboard</h1>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <Stat label="Produtos" value={products} href="/admin/produtos" />
         <Stat label="Publicados" value={published} href="/admin/produtos" />
         <Stat label="Lojas ativas" value={stores} href="/admin/lojas" />
-        <Stat label="Cliques (7d)" value={clicks} href="/admin/cliques" />
+        <Stat label="Impressões (7d)" value={impressions} href="/admin/metricas" />
+        <Stat label="Visualizações (7d)" value={views} href="/admin/metricas" />
+        <Stat label="Cliques (7d)" value={clicks} href="/admin/metricas" />
       </div>
     </div>
   );
