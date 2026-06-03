@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createProduct, updateProduct } from "@/actions/admin/products";
+import { slugify } from "@/lib/slugify";
 import { StorageUpload } from "./storage-upload";
 import type { Badge, Category, Product, Store } from "@prisma/client";
 
@@ -22,10 +23,18 @@ export function ProductForm({ stores, categories, badges, product }: Props) {
     ? updateProduct.bind(null, product.id)
     : createProduct;
 
+  const [title, setTitle] = useState(product?.title ?? "");
+  const [slug, setSlug] = useState(product?.slug ?? "");
+  const [slugManual, setSlugManual] = useState(!!product);
   const [imageUrl, setImageUrl] = useState(product?.imageUrl ?? "");
   const [imageStoragePath, setImageStoragePath] = useState(
     product?.imageStoragePath ?? "",
   );
+
+  function handleTitleChange(value: string) {
+    setTitle(value);
+    if (!slugManual) setSlug(slugify(value));
+  }
 
   const selectedCategories = new Set(
     product?.categories.map((c) => c.categoryId) ?? [],
@@ -34,8 +43,36 @@ export function ProductForm({ stores, categories, badges, product }: Props) {
 
   return (
     <form action={action} className="max-w-lg space-y-4">
-      <Field label="Título" name="title" defaultValue={product?.title} required />
-      <Field label="Slug" name="slug" defaultValue={product?.slug} />
+      <label className="block text-sm">
+        <span className="mb-1 block text-zinc-400">Título</span>
+        <input
+          name="title"
+          type="text"
+          value={title}
+          onChange={(e) => handleTitleChange(e.target.value)}
+          required
+          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-white"
+        />
+      </label>
+      <label className="block text-sm">
+        <span className="mb-1 block text-zinc-400">
+          Slug{" "}
+          <span className="text-zinc-600">
+            {slugManual ? "(editado manualmente)" : "(gerado do título)"}
+          </span>
+        </span>
+        <input
+          name="slug"
+          type="text"
+          value={slug}
+          onChange={(e) => {
+            setSlugManual(true);
+            setSlug(e.target.value);
+          }}
+          placeholder="produto-exemplo"
+          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-white"
+        />
+      </label>
 
       <label className="block text-sm">
         <span className="mb-1 block text-zinc-400">Loja</span>
@@ -85,7 +122,7 @@ export function ProductForm({ stores, categories, badges, product }: Props) {
 
       <StorageUpload
         bucket="productImages"
-        folder={product?.slug ?? "novo-produto"}
+        folder={slug || "novo-produto"}
         label="Upload imagem do produto"
         onUploaded={(url, path) => {
           setImageUrl(url);
@@ -138,9 +175,9 @@ export function ProductForm({ stores, categories, badges, product }: Props) {
         <input
           type="checkbox"
           name="isPublished"
-          defaultChecked={product?.isPublished}
+          defaultChecked={product?.isPublished ?? true}
         />
-        Publicado
+        Publicado (visível na loja)
       </label>
       <label className="flex items-center gap-2 text-sm">
         <input

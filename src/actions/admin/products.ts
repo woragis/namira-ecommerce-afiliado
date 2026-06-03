@@ -29,6 +29,13 @@ function parseIds(formData: FormData, key: string): string[] {
   return formData.getAll(key).map(String).filter(Boolean);
 }
 
+function revalidateProductCatalog(slug: string) {
+  revalidatePath("/");
+  revalidatePath("/produtos");
+  revalidatePath(`/produtos/${slug}`);
+  revalidatePath("/busca");
+}
+
 async function syncProductRelations(
   productId: string,
   categoryIds: string[],
@@ -96,8 +103,7 @@ export async function createProduct(formData: FormData) {
     parseIds(formData, "badgeIds"),
   );
 
-  revalidatePath("/");
-  revalidatePath("/produtos");
+  revalidateProductCatalog(slug);
   revalidatePath("/admin/produtos");
   redirect("/admin/produtos");
 }
@@ -121,6 +127,7 @@ export async function updateProduct(id: string, formData: FormData) {
   if (!parsed.success) throw new Error("Dados inválidos");
 
   const d = parsed.data;
+  const slug = d.slug?.trim() || slugify(d.title);
   const priceOriginal =
     typeof d.priceOriginal === "number" ? d.priceOriginal : null;
 
@@ -128,7 +135,7 @@ export async function updateProduct(id: string, formData: FormData) {
     where: { id },
     data: {
       title: d.title,
-      slug: d.slug?.trim() || slugify(d.title),
+      slug,
       description: d.description || null,
       imageUrl: d.imageUrl || null,
       imageStoragePath: d.imageStoragePath || null,
@@ -149,9 +156,7 @@ export async function updateProduct(id: string, formData: FormData) {
     parseIds(formData, "badgeIds"),
   );
 
-  revalidatePath("/");
-  revalidatePath("/produtos");
-  revalidatePath(`/produtos/${d.slug}`);
+  revalidateProductCatalog(slug);
   revalidatePath("/admin/produtos");
   redirect("/admin/produtos");
 }
@@ -179,16 +184,16 @@ export async function deleteProduct(id: string) {
 }
 
 export async function toggleProductPublished(id: string, published: boolean) {
-  await prisma.product.update({
+  const product = await prisma.product.update({
     where: { id },
     data: {
       isPublished: published,
       publishedAt: published ? new Date() : null,
     },
+    select: { slug: true },
   });
-  revalidatePath("/");
+  revalidateProductCatalog(product.slug);
   revalidatePath("/admin/produtos");
-  revalidatePath("/produtos");
 }
 
 export async function toggleProductFeatured(id: string, featured: boolean) {

@@ -172,12 +172,23 @@ export default async function AdminProdutosPage({ searchParams }: Props) {
                   </form>
                 </td>
                 <td className="p-3 text-right">
-                  <Link
-                    href={`/produtos/${p.slug}`}
-                    className="text-xs text-zinc-500 no-underline hover:text-amber-400"
-                  >
-                    Ver
-                  </Link>
+                  {p.isPublished ? (
+                    <Link
+                      href={`/produtos/${p.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-zinc-500 no-underline hover:text-amber-400"
+                    >
+                      Ver na loja
+                    </Link>
+                  ) : (
+                    <span
+                      className="text-xs text-zinc-600"
+                      title="Marque Publicado como Sim para exibir na loja"
+                    >
+                      Rascunho
+                    </span>
+                  )}
                 </td>
               </tr>
             ))}
