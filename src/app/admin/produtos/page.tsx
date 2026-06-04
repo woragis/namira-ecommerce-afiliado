@@ -171,7 +171,13 @@ export default async function AdminProdutosPage({ searchParams }: Props) {
                     </button>
                   </form>
                 </td>
-                <td className="p-3 text-right">
+                <td className="p-3 text-right whitespace-nowrap">
+                  <Link
+                    href={`/admin/metricas?days=30&product=${p.slug}`}
+                    className="mr-3 text-xs text-zinc-500 no-underline hover:text-amber-400"
+                  >
+                    Métricas
+                  </Link>
                   {p.isPublished ? (
                     <Link
                       href={`/produtos/${p.slug}`}

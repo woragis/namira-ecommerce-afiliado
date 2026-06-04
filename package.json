@@ -20,6 +20,7 @@
     "db:seed:ensure": "node scripts/run-seed.mjs ensure",
     "db:seed:demo": "node scripts/run-seed.mjs demo",
     "db:seed:upgrade": "node scripts/run-seed.mjs ensure --upgrade",
+    "db:rollup-metrics": "node scripts/rollup-metrics.mjs 90",
     "db:studio": "prisma studio",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",

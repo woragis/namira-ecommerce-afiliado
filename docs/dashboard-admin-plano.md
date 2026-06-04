@@ -39,11 +39,19 @@ Este arquivo.
 - Seção “Performance (7d)” com mini-funil e atalho para métricas.
 - Bloco “Saúde do catálogo”: publicados sem clique, rascunhos, destaques fracos.
 
-### Fase F — Futuro (fora deste ciclo)
+### Fase F — Melhorias UX métricas (implementado)
 
-- Rollup `product_metrics_daily` se volume > ~100k eventos/mês.
-- Gráficos com biblioteca (Recharts) se CSS não bastar.
-- Eventos: busca, share WhatsApp.
+- Banner estado vazio + média/dia nos KPIs
+- Gráfico com abas (uma métrica por vez)
+- Feed de atividade (cliques + PDP + impressões opcional)
+- Tabela: ordenação, filtro loja, paginação
+- Painel métricas em `/admin/produtos/[id]`
+- Rollup `product_metrics_daily` + cache 60s
+
+### Futuro
+
+- Eventos: busca, share WhatsApp
+- Recharts se necessário
 
 ## Arquivos principais
 

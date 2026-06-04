@@ -3,11 +3,20 @@ import {
   ctrAffiliateClicks,
   ctrDetailViews,
   ctrEndToEnd,
+  dailyAverage,
   parsePeriodDays,
+  parseProductSort,
   percentChange,
 } from "@/lib/analytics-stats";
 
 describe("analytics-stats period helpers", () => {
+  it("parseProductSort e dailyAverage", () => {
+    expect(parseProductSort("pdp")).toBe("pdp");
+    expect(parseProductSort("x")).toBe("cliques");
+    expect(dailyAverage(90, 30)).toBe("3.0");
+    expect(dailyAverage(5, 7)).toBe("0.7");
+  });
+
   it("parsePeriodDays aceita 7, 30 e 90", () => {
     expect(parsePeriodDays(undefined)).toBe(7);
     expect(parsePeriodDays("30")).toBe(30);

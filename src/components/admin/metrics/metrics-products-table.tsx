@@ -9,14 +9,22 @@ type Props = {
   title: string;
   rows: ProductMetricRow[];
   showAlert?: boolean;
+  highlightSlug?: string;
+  days?: number;
 };
 
-export function MetricsProductsTable({ title, rows, showAlert }: Props) {
+export function MetricsProductsTable({
+  title,
+  rows,
+  showAlert,
+  highlightSlug,
+  days = 30,
+}: Props) {
   return (
-    <section>
+    <section id="produtos">
       <h2 className="mb-3 font-semibold">{title}</h2>
       <div className="overflow-x-auto rounded-xl border border-zinc-800">
-        <table className="w-full min-w-[720px] text-left text-sm">
+        <table className="w-full min-w-[800px] text-left text-sm">
           <thead className="text-zinc-400">
             <tr>
               <th className="p-3">Produto</th>
@@ -38,9 +46,17 @@ export function MetricsProductsTable({ title, rows, showAlert }: Props) {
               </tr>
             ) : (
               rows.map((row) => {
-                const noClicks = showAlert && row.impressions >= 20 && row.clicks === 0;
+                const noClicks =
+                  showAlert && row.impressions >= 20 && row.clicks === 0;
+                const highlighted = highlightSlug === row.slug;
                 return (
-                  <tr key={row.productId} className="border-t border-zinc-800">
+                  <tr
+                    key={row.productId}
+                    id={highlighted ? `produto-${row.slug}` : undefined}
+                    className={`border-t border-zinc-800 ${
+                      highlighted ? "bg-amber-500/10" : ""
+                    }`}
+                  >
                     <td className="p-3">
                       <Link
                         href={`/produtos/${row.slug}`}
@@ -66,7 +82,13 @@ export function MetricsProductsTable({ title, rows, showAlert }: Props) {
                     <td className="p-3 text-zinc-400">
                       {ctrAffiliateClicks(row.views, row.clicks)}
                     </td>
-                    <td className="p-3 text-right">
+                    <td className="p-3 text-right whitespace-nowrap">
+                      <Link
+                        href={`/admin/metricas?days=${days}&product=${row.slug}`}
+                        className="mr-3 text-xs text-zinc-500 no-underline hover:text-amber-400"
+                      >
+                        Métricas
+                      </Link>
                       <Link
                         href={`/admin/produtos/${row.productId}`}
                         className="text-xs text-zinc-500 no-underline hover:text-amber-400"
