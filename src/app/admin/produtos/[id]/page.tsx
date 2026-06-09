@@ -17,6 +17,7 @@ export default async function EditarProdutoPage({ params }: Props) {
       include: {
         categories: { select: { categoryId: true } },
         badges: { select: { badgeId: true } },
+        media: { orderBy: { sortOrder: "asc" } },
       },
     }),
     prisma.store.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),

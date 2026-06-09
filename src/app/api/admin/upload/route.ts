@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdminToken, ADMIN_COOKIE } from "@/lib/admin-auth";
-import { uploadImage, type UploadBucket } from "@/lib/storage";
+import { uploadMedia, type UploadBucket } from "@/lib/storage";
 
 export async function POST(request: NextRequest) {
   const secret = process.env.ADMIN_SECRET?.trim();
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Bucket inválido" }, { status: 400 });
   }
 
-  const result = await uploadImage(bucket, file, folder);
+  const result = await uploadMedia(bucket, file, folder);
 
   if ("error" in result) {
     return NextResponse.json({ error: result.error }, { status: 400 });

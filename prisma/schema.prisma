@@ -63,6 +63,11 @@ enum BadgeStyle {
   NOVO
 }
 
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
 model Product {
   id              String             @id @default(uuid())
   slug            String             @unique
@@ -92,10 +97,25 @@ model Product {
   views           ProductViewEvent[]
   impressions     ProductImpressionEvent[]
   metricsDaily    ProductMetricsDaily[]
+  media           ProductMedia[]
 
   @@index([storeId])
   @@index([isPublished])
   @@map("products")
+}
+
+model ProductMedia {
+  id          String    @id @default(uuid())
+  productId   String    @map("product_id")
+  type        MediaType
+  url         String
+  storagePath String?   @map("storage_path")
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_media")
 }
 
 model ProductCategory {

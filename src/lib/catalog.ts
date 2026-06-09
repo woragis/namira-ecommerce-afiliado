@@ -6,6 +6,7 @@ export const productInclude = {
   store: true,
   badges: { include: { badge: true } },
   categories: { include: { category: true } },
+  media: { orderBy: { sortOrder: "asc" } },
 } satisfies Prisma.ProductInclude;
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{

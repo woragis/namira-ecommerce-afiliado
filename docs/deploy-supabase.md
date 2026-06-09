@@ -12,7 +12,7 @@
 | Bucket | Uso |
 |--------|-----|
 | `store-logos` | PNG/SVG das lojas |
-| `product-images` | Fotos dos produtos |
+| `product-images` | Fotos e vídeos dos produtos (galeria) |
 
 Em cada bucket: **Public bucket** = ON.
 

@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { createProduct, updateProduct } from "@/actions/admin/products";
 import { slugify } from "@/lib/slugify";
-import { StorageUpload } from "./storage-upload";
-import type { Badge, Category, Product, Store } from "@prisma/client";
+import { legacyMediaPayload, mediaToDrafts } from "@/lib/product-media";
+import { ProductMediaManager } from "./product-media-manager";
+import type { Badge, Category, Product, ProductMedia, Store } from "@prisma/client";
 
 type ProductWithRelations = Product & {
   categories: { categoryId: string }[];
   badges: { badgeId: string }[];
+  media?: ProductMedia[];
 };
 
 type Props = {
@@ -18,6 +20,11 @@ type Props = {
   product?: ProductWithRelations;
 };
 
+function initialMedia(product?: ProductWithRelations) {
+  if (product?.media?.length) return mediaToDrafts(product.media);
+  return legacyMediaPayload(product?.imageUrl, product?.imageStoragePath);
+}
+
 export function ProductForm({ stores, categories, badges, product }: Props) {
   const action = product
     ? updateProduct.bind(null, product.id)
@@ -26,10 +33,6 @@ export function ProductForm({ stores, categories, badges, product }: Props) {
   const [title, setTitle] = useState(product?.title ?? "");
   const [slug, setSlug] = useState(product?.slug ?? "");
   const [slugManual, setSlugManual] = useState(!!product);
-  const [imageUrl, setImageUrl] = useState(product?.imageUrl ?? "");
-  const [imageStoragePath, setImageStoragePath] = useState(
-    product?.imageStoragePath ?? "",
-  );
 
   function handleTitleChange(value: string) {
     setTitle(value);
@@ -120,26 +123,10 @@ export function ProductForm({ stores, categories, badges, product }: Props) {
         defaultValue={product?.description ?? ""}
       />
 
-      <StorageUpload
-        bucket="productImages"
+      <ProductMediaManager
         folder={slug || "novo-produto"}
-        label="Upload imagem do produto"
-        onUploaded={(url, path) => {
-          setImageUrl(url);
-          setImageStoragePath(path);
-        }}
+        initial={initialMedia(product)}
       />
-      <input type="hidden" name="imageUrl" value={imageUrl} />
-      <input type="hidden" name="imageStoragePath" value={imageStoragePath} />
-      <label className="block text-sm">
-        <span className="mb-1 block text-zinc-400">URL da imagem</span>
-        <input
-          type="url"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-white"
-        />
-      </label>
 
       <fieldset className="space-y-2">
         <legend className="text-sm text-zinc-400">Categorias</legend>

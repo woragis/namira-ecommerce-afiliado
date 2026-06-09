@@ -5,13 +5,16 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { slugify } from "@/lib/slugify";
+import {
+  parseMediaPayload,
+  payloadToCreateRows,
+  primaryImageFromPayload,
+} from "@/lib/product-media";
 
 const productSchema = z.object({
   title: z.string().min(3),
   slug: z.string().optional(),
   description: z.string().optional(),
-  imageUrl: z.string().optional(),
-  imageStoragePath: z.string().optional(),
   priceCurrent: z.coerce.number().positive(),
   priceOriginal: z.coerce.number().positive().optional().or(z.literal("")),
   affiliateUrl: z.string().url(),
@@ -56,14 +59,24 @@ async function syncProductRelations(
   }
 }
 
+async function syncProductMedia(productId: string, formData: FormData) {
+  const payload = parseMediaPayload(String(formData.get("mediaPayload") ?? ""));
+  await prisma.productMedia.deleteMany({ where: { productId } });
+
+  const rows = payloadToCreateRows(payload);
+  if (rows.length) {
+    await prisma.productMedia.createMany({
+      data: rows.map((row) => ({ ...row, productId })),
+    });
+  }
+}
+
 export async function createProduct(formData: FormData) {
   const priceOriginalRaw = formData.get("priceOriginal");
   const parsed = productSchema.safeParse({
     title: formData.get("title"),
     slug: formData.get("slug") || undefined,
     description: formData.get("description") || undefined,
-    imageUrl: formData.get("imageUrl") || "",
-    imageStoragePath: formData.get("imageStoragePath") || "",
     priceCurrent: formData.get("priceCurrent"),
     priceOriginal: priceOriginalRaw || undefined,
     affiliateUrl: formData.get("affiliateUrl"),
@@ -78,14 +91,17 @@ export async function createProduct(formData: FormData) {
   const slug = d.slug?.trim() || slugify(d.title);
   const priceOriginal =
     typeof d.priceOriginal === "number" ? d.priceOriginal : null;
+  const primaryImage = primaryImageFromPayload(
+    parseMediaPayload(String(formData.get("mediaPayload") ?? "")),
+  );
 
   const product = await prisma.product.create({
     data: {
       title: d.title,
       slug,
       description: d.description || null,
-      imageUrl: d.imageUrl || null,
-      imageStoragePath: d.imageStoragePath || null,
+      imageUrl: primaryImage.imageUrl,
+      imageStoragePath: primaryImage.imageStoragePath,
       priceCurrent: d.priceCurrent,
       priceOriginal,
       discountPercent: calcDiscount(d.priceCurrent, priceOriginal),
@@ -102,6 +118,7 @@ export async function createProduct(formData: FormData) {
     parseIds(formData, "categoryIds"),
     parseIds(formData, "badgeIds"),
   );
+  await syncProductMedia(product.id, formData);
 
   revalidateProductCatalog(slug);
   revalidatePath("/admin/produtos");
@@ -114,8 +131,6 @@ export async function updateProduct(id: string, formData: FormData) {
     title: formData.get("title"),
     slug: formData.get("slug") || undefined,
     description: formData.get("description") || undefined,
-    imageUrl: formData.get("imageUrl") || "",
-    imageStoragePath: formData.get("imageStoragePath") || "",
     priceCurrent: formData.get("priceCurrent"),
     priceOriginal: priceOriginalRaw || undefined,
     affiliateUrl: formData.get("affiliateUrl"),
@@ -130,6 +145,9 @@ export async function updateProduct(id: string, formData: FormData) {
   const slug = d.slug?.trim() || slugify(d.title);
   const priceOriginal =
     typeof d.priceOriginal === "number" ? d.priceOriginal : null;
+  const primaryImage = primaryImageFromPayload(
+    parseMediaPayload(String(formData.get("mediaPayload") ?? "")),
+  );
 
   await prisma.product.update({
     where: { id },
@@ -137,8 +155,8 @@ export async function updateProduct(id: string, formData: FormData) {
       title: d.title,
       slug,
       description: d.description || null,
-      imageUrl: d.imageUrl || null,
-      imageStoragePath: d.imageStoragePath || null,
+      imageUrl: primaryImage.imageUrl,
+      imageStoragePath: primaryImage.imageStoragePath,
       priceCurrent: d.priceCurrent,
       priceOriginal,
       discountPercent: calcDiscount(d.priceCurrent, priceOriginal),
@@ -155,6 +173,7 @@ export async function updateProduct(id: string, formData: FormData) {
     parseIds(formData, "categoryIds"),
     parseIds(formData, "badgeIds"),
   );
+  await syncProductMedia(id, formData);
 
   revalidateProductCatalog(slug);
   revalidatePath("/admin/produtos");

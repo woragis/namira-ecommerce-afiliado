@@ -1,7 +1,10 @@
-import Image from "next/image";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import {
+  buildGalleryItems,
+  ProductGallery,
+} from "@/components/catalog/product-gallery";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { WhatsAppShareButton } from "@/components/catalog/whatsapp-share-button";
 import { hashUserAgent, recordProductView } from "@/lib/analytics";
@@ -16,6 +19,15 @@ export async function generateMetadata({ params }: Props) {
 
   const title = product.metaTitle ?? product.title;
   const description = product.metaDescription ?? product.title;
+  const galleryItems = buildGalleryItems(
+    product.media,
+    product.imageUrl,
+    product.imageAlt ?? product.title,
+  );
+  const ogImage =
+    galleryItems.find((item) => item.type === "IMAGE")?.url ??
+    product.imageUrl ??
+    undefined;
 
   return {
     title,
@@ -24,7 +36,7 @@ export async function generateMetadata({ params }: Props) {
       title,
       description,
       type: "website",
-      ...(product.imageUrl ? { images: [{ url: product.imageUrl }] } : {}),
+      ...(ogImage ? { images: [{ url: ogImage }] } : {}),
     },
   };
 }
@@ -53,6 +65,12 @@ export default async function ProdutoDetalhePage({ params }: Props) {
     ? Number(product.priceOriginal)
     : null;
 
+  const galleryItems = buildGalleryItems(
+    product.media,
+    product.imageUrl,
+    product.imageAlt ?? product.title,
+  );
+
   return (
     <main className="px-6 py-9 md:px-10">
       <nav className="mb-6 text-sm text-[var(--texto-suave)]">
@@ -68,20 +86,7 @@ export default async function ProdutoDetalhePage({ params }: Props) {
       </nav>
 
       <div className="mb-12 grid gap-10 md:grid-cols-2">
-        <div className="relative aspect-square overflow-hidden rounded-2xl bg-[var(--roxo-claro)]">
-          {product.imageUrl ? (
-            <Image
-              src={product.imageUrl}
-              alt={product.imageAlt ?? product.title}
-              fill
-              className="object-cover"
-              priority
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-8xl">📦</div>
-          )}
-        </div>
+        <ProductGallery items={galleryItems} fallbackAlt={product.title} />
         <div>
           <div
             className="mb-2 text-xs font-semibold tracking-wider uppercase"
