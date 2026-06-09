@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FavoriteButton } from "@/components/catalog/favorite-button";
 import { ProductImpressionTracker } from "@/components/catalog/product-impression-tracker";
 import { WhatsAppShareButton } from "@/components/catalog/whatsapp-share-button";
-import { formatPrice, type ProductWithRelations } from "@/lib/catalog";
+import { formatPrice, type ProductListItem } from "@/lib/catalog";
 import type { BadgeStyle } from "@prisma/client";
 
 const badgeClass: Record<BadgeStyle, string> = {
@@ -13,7 +13,7 @@ const badgeClass: Record<BadgeStyle, string> = {
 };
 
 type Props = {
-  product: ProductWithRelations;
+  product: ProductListItem;
 };
 
 export function ProductCard({ product }: Props) {

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAdmin } from "@/actions/admin/auth";
 
-const links = [
+const baseLinks = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/lojas", label: "Lojas" },
   { href: "/admin/produtos", label: "Produtos" },
@@ -13,11 +13,18 @@ const links = [
   { href: "/admin/colecoes", label: "Coleções" },
   { href: "/admin/paginas", label: "Páginas" },
   { href: "/admin/configuracoes", label: "Configurações" },
-  { href: "/admin/metricas", label: "Métricas" },
 ];
 
-export function AdminShell({ children }: { children: React.ReactNode }) {
+const metricsLink = { href: "/admin/metricas", label: "Métricas" };
+
+type Props = {
+  children: React.ReactNode;
+  metricsEnabled?: boolean;
+};
+
+export function AdminShell({ children, metricsEnabled = false }: Props) {
   const pathname = usePathname();
+  const links = metricsEnabled ? [...baseLinks, metricsLink] : baseLinks;
 
   if (pathname === "/admin/login") {
     return <>{children}</>;

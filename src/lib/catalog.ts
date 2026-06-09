@@ -2,12 +2,20 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { safeDbQuery } from "@/lib/safe-db";
 
-export const productInclude = {
+export const productListInclude = {
   store: true,
   badges: { include: { badge: true } },
   categories: { include: { category: true } },
-  media: { orderBy: { sortOrder: "asc" } },
 } satisfies Prisma.ProductInclude;
+
+export const productInclude = {
+  ...productListInclude,
+  media: { orderBy: { sortOrder: "asc" as const } },
+} satisfies Prisma.ProductInclude;
+
+export type ProductListItem = Prisma.ProductGetPayload<{
+  include: typeof productListInclude;
+}>;
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: typeof productInclude;
@@ -99,7 +107,7 @@ export async function getHomeCollections() {
           products: {
             orderBy: { sortOrder: "asc" },
             include: {
-              product: { include: productInclude },
+              product: { include: productListInclude },
             },
           },
         },
@@ -166,7 +174,7 @@ function buildProductOrderBy(
 }
 
 const emptyCatalog = {
-  items: [] as ProductWithRelations[],
+  items: [] as ProductListItem[],
   total: 0,
   page: 1,
   limit: 24,
@@ -183,7 +191,7 @@ export async function getProducts(filters: CatalogFilters = {}) {
     const [items, total] = await Promise.all([
       prisma.product.findMany({
         where,
-        include: productInclude,
+        include: productListInclude,
         orderBy: buildProductOrderBy(filters.sort),
         skip,
         take: limit,
@@ -200,7 +208,7 @@ export async function getFeaturedProducts(limit = 8) {
     () =>
       prisma.product.findMany({
         where: { isPublished: true, isFeatured: true },
-        include: productInclude,
+        include: productListInclude,
         orderBy: [{ sortPriority: "desc" }, { publishedAt: "desc" }],
         take: limit,
       }),

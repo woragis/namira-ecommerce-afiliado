@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
+import { isAdminMetricsEnabled } from "@/lib/admin-metrics-flag";
 
 export default function AdminCliquesRedirect() {
-  redirect("/admin/metricas");
+  redirect(isAdminMetricsEnabled() ? "/admin/metricas" : "/admin");
 }

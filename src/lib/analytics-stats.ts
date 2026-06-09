@@ -345,7 +345,7 @@ async function aggregateProductRowsFromEvents(
   return scores;
 }
 
-async function loadProductMetricRows(
+export async function loadProductMetricRows(
   since: Date,
   storeId?: string,
 ): Promise<ProductMetricRow[]> {
@@ -412,6 +412,38 @@ function sortProductRows(rows: ProductMetricRow[], sort: ProductSort) {
   return [...rows].sort(cmp);
 }
 
+export function paginateProductMetricRows(
+  rows: ProductMetricRow[],
+  sort: ProductSort,
+  page: number,
+  pageSize = PRODUCTS_PAGE_SIZE,
+): ProductsTableResult {
+  const all = sortProductRows(rows, sort);
+  const total = all.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const start = (safePage - 1) * pageSize;
+
+  return {
+    rows: all.slice(start, start + pageSize),
+    total,
+    page: safePage,
+    totalPages,
+    pageSize,
+  };
+}
+
+export function filterProductsWithoutClicks(
+  rows: ProductMetricRow[],
+  minImpressions: number,
+  limit = 10,
+): ProductMetricRow[] {
+  return rows
+    .filter((p) => p.impressions >= minImpressions && p.clicks === 0)
+    .sort((a, b) => b.impressions - a.impressions)
+    .slice(0, limit);
+}
+
 export async function getProductsMetricsTable(opts: {
   since: Date;
   sort: ProductSort;
@@ -419,23 +451,13 @@ export async function getProductsMetricsTable(opts: {
   page: number;
   pageSize?: number;
 }): Promise<ProductsTableResult> {
-  const pageSize = opts.pageSize ?? PRODUCTS_PAGE_SIZE;
-  const all = sortProductRows(
-    await loadProductMetricRows(opts.since, opts.storeId),
+  const rows = await loadProductMetricRows(opts.since, opts.storeId);
+  return paginateProductMetricRows(
+    rows,
     opts.sort,
+    opts.page,
+    opts.pageSize,
   );
-  const total = all.length;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const page = Math.min(opts.page, totalPages);
-  const start = (page - 1) * pageSize;
-
-  return {
-    rows: all.slice(start, start + pageSize),
-    total,
-    page,
-    totalPages,
-    pageSize,
-  };
 }
 
 export async function getTopProductsByMetrics(
@@ -456,11 +478,8 @@ export async function getProductsWithoutClicks(
   minImpressions: number,
   limit = 10,
 ): Promise<ProductMetricRow[]> {
-  const all = await loadProductMetricRows(since);
-  return all
-    .filter((p) => p.impressions >= minImpressions && p.clicks === 0)
-    .sort((a, b) => b.impressions - a.impressions)
-    .slice(0, limit);
+  const rows = await loadProductMetricRows(since);
+  return filterProductsWithoutClicks(rows, minImpressions, limit);
 }
 
 export async function getProductMetricsSummary(
@@ -468,14 +487,15 @@ export async function getProductMetricsSummary(
   days: PeriodDays,
 ): Promise<MetricTotals> {
   const since = daysAgo(days);
-  const agg = await prisma.productMetricsDaily.aggregate({
+  const rollupRows = await prisma.productMetricsDaily.count({
     where: { productId, date: { gte: startOfUtcDay(since) } },
-    _sum: { impressions: true, views: true, clicks: true },
   });
 
-  if ((await prisma.productMetricsDaily.count({
-    where: { productId, date: { gte: startOfUtcDay(since) } },
-  })) > 0) {
+  if (rollupRows > 0) {
+    const agg = await prisma.productMetricsDaily.aggregate({
+      where: { productId, date: { gte: startOfUtcDay(since) } },
+      _sum: { impressions: true, views: true, clicks: true },
+    });
     return {
       impressions: agg._sum.impressions ?? 0,
       views: agg._sum.views ?? 0,
@@ -617,51 +637,38 @@ export async function getCatalogHealth(
   const since = daysAgo(periodDays);
   const weekSince = daysAgo(7);
 
-  const published = await prisma.product.findMany({
-    where: { isPublished: true },
-    select: { id: true, isFeatured: true },
-  });
-  const publishedIds = published.map((p) => p.id);
-
-  const [clickedIds, draftProducts, featuredImp] = await Promise.all([
-    prisma.clickEvent.findMany({
-      where: { clickedAt: { gte: since }, productId: { in: publishedIds } },
-      distinct: ["productId"],
-      select: { productId: true },
-    }),
+  const [withoutClicksRow, draftProducts, weakFeaturedRow] = await Promise.all([
+    prisma.$queryRaw<[{ count: bigint }]>`
+      SELECT COUNT(*)::bigint AS count
+      FROM products p
+      WHERE p.is_published = true
+        AND NOT EXISTS (
+          SELECT 1 FROM click_events c
+          WHERE c.product_id = p.id AND c.clicked_at >= ${since}
+        )
+    `,
     prisma.product.count({ where: { isPublished: false } }),
-    prisma.productImpressionEvent.groupBy({
-      by: ["productId"],
-      where: {
-        impressedAt: { gte: weekSince },
-        productId: { in: published.filter((p) => p.isFeatured).map((p) => p.id) },
-      },
-      _count: { productId: true },
-    }),
+    prisma.$queryRaw<[{ count: bigint }]>`
+      SELECT COUNT(*)::bigint AS count
+      FROM products p
+      WHERE p.is_featured = true
+        AND p.is_published = true
+        AND (
+          SELECT COUNT(*)::int FROM product_impression_events i
+          WHERE i.product_id = p.id AND i.impressed_at >= ${weekSince}
+        ) >= 5
+        AND NOT EXISTS (
+          SELECT 1 FROM click_events c
+          WHERE c.product_id = p.id AND c.clicked_at >= ${weekSince}
+        )
+    `,
   ]);
 
-  const clickedSet = new Set(clickedIds.map((c) => c.productId));
-  const publishedWithoutClicks = publishedIds.filter(
-    (id) => !clickedSet.has(id),
-  ).length;
-
-  const featuredWithImp = new Set(
-    featuredImp.filter((f) => f._count.productId >= 5).map((f) => f.productId),
-  );
-  const featuredClicked = await prisma.clickEvent.findMany({
-    where: {
-      clickedAt: { gte: weekSince },
-      productId: { in: [...featuredWithImp] },
-    },
-    distinct: ["productId"],
-    select: { productId: true },
-  });
-  const featuredClickedSet = new Set(featuredClicked.map((c) => c.productId));
-  const weakFeatured = [...featuredWithImp].filter(
-    (id) => !featuredClickedSet.has(id),
-  ).length;
-
-  return { publishedWithoutClicks, draftProducts, weakFeatured };
+  return {
+    publishedWithoutClicks: Number(withoutClicksRow[0]?.count ?? 0),
+    draftProducts,
+    weakFeatured: Number(weakFeaturedRow[0]?.count ?? 0),
+  };
 }
 
 export function ctrDetailViews(impressions: number, views: number): string {

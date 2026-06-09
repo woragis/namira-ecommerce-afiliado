@@ -4,10 +4,46 @@ import {
   ctrDetailViews,
   ctrEndToEnd,
   dailyAverage,
+  filterProductsWithoutClicks,
+  paginateProductMetricRows,
   parsePeriodDays,
   parseProductSort,
   percentChange,
+  type ProductMetricRow,
 } from "@/lib/analytics-stats";
+
+const sampleRows: ProductMetricRow[] = [
+  {
+    productId: "1",
+    title: "A",
+    slug: "a",
+    storeName: "Loja",
+    storeId: "s1",
+    impressions: 100,
+    views: 10,
+    clicks: 5,
+  },
+  {
+    productId: "2",
+    title: "B",
+    slug: "b",
+    storeName: "Loja",
+    storeId: "s1",
+    impressions: 50,
+    views: 20,
+    clicks: 0,
+  },
+  {
+    productId: "3",
+    title: "C",
+    slug: "c",
+    storeName: "Loja",
+    storeId: "s1",
+    impressions: 200,
+    views: 5,
+    clicks: 1,
+  },
+];
 
 describe("analytics-stats period helpers", () => {
   it("parseProductSort e dailyAverage", () => {
@@ -44,5 +80,22 @@ describe("analytics-stats CTR helpers", () => {
 
   it("ctrEndToEnd calcula percentual", () => {
     expect(ctrEndToEnd(1000, 25)).toBe("2.50%");
+  });
+});
+
+describe("analytics-stats product table helpers", () => {
+  it("paginateProductMetricRows ordena e pagina", () => {
+    const page1 = paginateProductMetricRows(sampleRows, "cliques", 1, 2);
+    expect(page1.total).toBe(3);
+    expect(page1.totalPages).toBe(2);
+    expect(page1.rows.map((r) => r.slug)).toEqual(["a", "c"]);
+
+    const page2 = paginateProductMetricRows(sampleRows, "cliques", 2, 2);
+    expect(page2.rows.map((r) => r.slug)).toEqual(["b"]);
+  });
+
+  it("filterProductsWithoutClicks retorna produtos com impressões e zero cliques", () => {
+    const stale = filterProductsWithoutClicks(sampleRows, 20, 5);
+    expect(stale.map((r) => r.slug)).toEqual(["b"]);
   });
 });

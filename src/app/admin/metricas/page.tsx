@@ -10,9 +10,11 @@ import {
 } from "@/components/admin/metrics/metrics-products-toolbar";
 import { MetricsRecentEvents } from "@/components/admin/metrics/metrics-recent-events";
 import { PeriodSelector } from "@/components/admin/metrics/period-selector";
+import { isAdminMetricsEnabled } from "@/lib/admin-metrics-flag";
 import { loadAdminMetricsPage } from "@/lib/metrics-page-data";
 import { buildMetricsHref } from "@/lib/metrics-query";
 import { isDatabaseConfigured } from "@/lib/safe-db";
+import Link from "next/link";
 
 type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -35,7 +37,34 @@ function normalizeSearch(
   };
 }
 
+function MetricsDisabledPage() {
+  return (
+    <div className="max-w-lg">
+      <h1 className="mb-3 text-2xl font-bold">Métricas</h1>
+      <p className="mb-4 text-sm text-zinc-400">
+        Esta área está desativada para manter o admin rápido. Nenhuma consulta
+        pesada é executada enquanto estiver oculta.
+      </p>
+      <p className="mb-6 text-sm text-zinc-500">
+        Para reativar gráficos, funil e tabelas de produtos, defina{" "}
+        <code className="text-zinc-400">ADMIN_METRICS_ENABLED=true</code> nas
+        variáveis de ambiente e reinicie o app.
+      </p>
+      <Link
+        href="/admin"
+        className="inline-block rounded-lg border border-zinc-600 px-4 py-2 text-sm text-zinc-300 no-underline hover:border-zinc-400"
+      >
+        ← Voltar ao dashboard
+      </Link>
+    </div>
+  );
+}
+
 export default async function AdminMetricasPage({ searchParams }: Props) {
+  if (!isAdminMetricsEnabled()) {
+    return <MetricsDisabledPage />;
+  }
+
   if (!isDatabaseConfigured()) {
     return <p className="text-zinc-400">Banco não configurado.</p>;
   }
@@ -159,8 +188,8 @@ export default async function AdminMetricasPage({ searchParams }: Props) {
       />
 
       <p className="mt-8 text-xs text-zinc-600">
-        Dados agregados em cache por 60s. Rollup diário atualizado ao abrir esta
-        página.
+        Dados agregados em cache por 60s. O dia atual é atualizado ao abrir;
+        dias anteriores são sincronizados em background.
       </p>
     </div>
   );

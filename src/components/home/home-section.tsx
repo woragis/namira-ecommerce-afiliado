@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { ProductGrid } from "@/components/catalog/product-grid";
-import type { ProductWithRelations } from "@/lib/catalog";
+import type { ProductListItem } from "@/lib/catalog";
 
 type Props = {
   title: string;
   count: number;
   href: string;
-  products: ProductWithRelations[];
+  products: ProductListItem[];
 };
 
 export function HomeSection({ title, count, href, products }: Props) {

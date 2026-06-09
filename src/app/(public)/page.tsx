@@ -7,7 +7,7 @@ import {
   getHomeCollections,
   getSiteSettings,
 } from "@/lib/catalog";
-import type { ProductWithRelations } from "@/lib/catalog";
+import type { ProductListItem } from "@/lib/catalog";
 import { CollectionType } from "@prisma/client";
 
 export const revalidate = 60;
@@ -25,7 +25,7 @@ export default async function HomePage() {
 
   const bannerProducts = (banner?.products ?? [])
     .map((cp) => cp.product)
-    .filter((p) => p.isPublished) as ProductWithRelations[];
+    .filter((p) => p.isPublished) as ProductListItem[];
 
   return (
     <>
@@ -61,7 +61,7 @@ export default async function HomePage() {
           const products = col.products
             .map((cp) => cp.product)
             .filter((p) => p.isPublished)
-            .slice(0, col.maxProducts ?? 12) as ProductWithRelations[];
+            .slice(0, col.maxProducts ?? 12) as ProductListItem[];
           return (
             <HomeSection
               key={col.id}

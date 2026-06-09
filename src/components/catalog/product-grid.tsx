@@ -1,7 +1,7 @@
-import type { ProductWithRelations } from "@/lib/catalog";
+import type { ProductListItem } from "@/lib/catalog";
 import { ProductCard } from "./product-card";
 
-export function ProductGrid({ products }: { products: ProductWithRelations[] }) {
+export function ProductGrid({ products }: { products: ProductListItem[] }) {
   if (products.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed border-[var(--borda)] bg-white px-6 py-16 text-center text-[var(--texto-suave)]">

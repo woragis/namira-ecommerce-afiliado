@@ -1,6 +1,6 @@
 import type { Badge, Category, Store } from "@prisma/client";
 
-export type { ProductWithRelations } from "@/lib/catalog";
+export type { ProductListItem, ProductWithRelations } from "@/lib/catalog";
 
 export type StoreNavItem = Pick<
   Store,

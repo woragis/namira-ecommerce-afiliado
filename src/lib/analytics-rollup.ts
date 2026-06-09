@@ -107,7 +107,18 @@ export async function rollupMetricsForDay(day: Date) {
   return totals.size;
 }
 
-/** Preenche dias ausentes (e reprocessa o dia atual). */
+const ROLLUP_THROTTLE_MS = 5 * 60 * 1000;
+const ROLLUP_BATCH_SIZE = 5;
+
+let lastBackgroundRollupAt = 0;
+let backgroundRollupRunning = false;
+
+/** Agrega só o dia atual (rápido — uma rodada de queries). */
+export async function syncMetricsRollupToday() {
+  return rollupMetricsForDay(startOfUtcDay(new Date()));
+}
+
+/** Preenche dias ausentes; dias processados em lotes paralelos. */
 export async function syncMetricsRollup(periodDays: number) {
   const start = daysAgo(periodDays);
   const today = startOfUtcDay(new Date());
@@ -122,18 +133,45 @@ export async function syncMetricsRollup(periodDays: number) {
     existing.map((r) => formatMetricsDayKey(r.date)),
   );
 
-  let rolled = 0;
-  for (const day of days) {
+  const toProcess = days.filter((day) => {
     const key = formatMetricsDayKey(day);
     const isToday = key === formatMetricsDayKey(today);
-    if (!existingKeys.has(key) || isToday) {
-      await rollupMetricsForDay(day);
-      rolled += 1;
-    }
+    return !existingKeys.has(key) || isToday;
+  });
+
+  let rolled = 0;
+  for (let i = 0; i < toProcess.length; i += ROLLUP_BATCH_SIZE) {
+    const batch = toProcess.slice(i, i + ROLLUP_BATCH_SIZE);
+    await Promise.all(batch.map((day) => rollupMetricsForDay(day)));
+    rolled += batch.length;
   }
   return rolled;
 }
 
+/**
+ * Para páginas admin: atualiza hoje de forma síncrona e agenda o restante
+ * em background (no máximo uma vez a cada 5 min por instância).
+ */
+export async function warmMetricsRollup(periodDays: number) {
+  await syncMetricsRollupToday();
+  scheduleMetricsRollup(periodDays);
+}
+
+export function scheduleMetricsRollup(periodDays: number) {
+  const now = Date.now();
+  if (backgroundRollupRunning || now - lastBackgroundRollupAt < ROLLUP_THROTTLE_MS) {
+    return;
+  }
+  lastBackgroundRollupAt = now;
+  backgroundRollupRunning = true;
+  void syncMetricsRollup(periodDays)
+    .catch((err) => console.error("[metrics rollup]", err))
+    .finally(() => {
+      backgroundRollupRunning = false;
+    });
+}
+
+/** @deprecated Prefer warmMetricsRollup on admin pages. */
 export async function rollupMetricsRecentDays(days: number) {
   const start = daysAgo(days);
   const list = listUtcDaysBetween(start, new Date());

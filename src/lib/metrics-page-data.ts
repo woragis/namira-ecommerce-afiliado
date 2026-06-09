@@ -1,10 +1,11 @@
 import { unstable_cache } from "next/cache";
-import { syncMetricsRollup } from "@/lib/analytics-rollup";
+import { warmMetricsRollup } from "@/lib/analytics-rollup";
 import {
   getMetricsComparison,
   getDailyMetricsSeries,
-  getProductsMetricsTable,
-  getProductsWithoutClicks,
+  loadProductMetricRows,
+  paginateProductMetricRows,
+  filterProductsWithoutClicks,
   getTopListPaths,
   getTopStoresByClicks,
   getRecentActivityEvents,
@@ -39,8 +40,7 @@ async function fetchMetricsPageData(
   const [
     comparison,
     series,
-    productsTable,
-    staleProducts,
+    productRows,
     listPaths,
     topStores,
     recentEvents,
@@ -48,8 +48,7 @@ async function fetchMetricsPageData(
   ] = await Promise.all([
     getMetricsComparison(days),
     getDailyMetricsSeries(days),
-    getProductsMetricsTable({ since, sort, storeId, page }),
-    getProductsWithoutClicks(since, 20, 8),
+    loadProductMetricRows(since, storeId),
     getTopListPaths(since, 10),
     getTopStoresByClicks(since, 8),
     getRecentActivityEvents(since, 25, showImpressions),
@@ -59,6 +58,9 @@ async function fetchMetricsPageData(
       select: { id: true, name: true, slug: true },
     }),
   ]);
+
+  const productsTable = paginateProductMetricRows(productRows, sort, page);
+  const staleProducts = filterProductsWithoutClicks(productRows, 20, 8);
 
   const totals = comparison.current;
   const isEmpty =
@@ -98,7 +100,7 @@ export async function loadAdminMetricsPage(search: MetricsPageSearch) {
   const showImpressions = parseShowImpressions(search.impressoes);
   const highlightSlug = search.product?.trim() || undefined;
 
-  await syncMetricsRollup(days);
+  await warmMetricsRollup(days);
 
   const data = await getCachedMetricsPage(
     days,

@@ -2,12 +2,12 @@
 
 import { startTransition, useEffect, useState } from "react";
 import { ProductGrid } from "@/components/catalog/product-grid";
-import type { ProductWithRelations } from "@/lib/catalog";
+import type { ProductListItem } from "@/lib/catalog";
 
 const STORAGE_KEY = "namira_favorites";
 
 export function FavoritosClient() {
-  const [products, setProducts] = useState<ProductWithRelations[]>([]);
+  const [products, setProducts] = useState<ProductListItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

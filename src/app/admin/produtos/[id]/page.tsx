@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { DeleteProductButton } from "@/components/admin/delete-product-button";
 import { ProductMetricsPanel } from "@/components/admin/metrics/product-metrics-panel";
 import { ProductForm } from "@/components/admin/product-form";
-import { syncMetricsRollup } from "@/lib/analytics-rollup";
+import { isAdminMetricsEnabled } from "@/lib/admin-metrics-flag";
 import { getProductMetricsSummary } from "@/lib/analytics-stats";
 import { prisma } from "@/lib/db";
 
@@ -10,8 +10,9 @@ type Props = { params: Promise<{ id: string }> };
 
 export default async function EditarProdutoPage({ params }: Props) {
   const { id } = await params;
+  const metricsEnabled = isAdminMetricsEnabled();
 
-  const [product, stores, categories, badges] = await Promise.all([
+  const [product, stores, categories, badges, metrics] = await Promise.all([
     prisma.product.findUnique({
       where: { id },
       include: {
@@ -23,15 +24,15 @@ export default async function EditarProdutoPage({ params }: Props) {
     prisma.store.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),
     prisma.category.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),
     prisma.badge.findMany(),
+    metricsEnabled
+      ? Promise.all([
+          getProductMetricsSummary(id, 7),
+          getProductMetricsSummary(id, 30),
+        ])
+      : Promise.resolve(null),
   ]);
 
   if (!product) notFound();
-
-  await syncMetricsRollup(30);
-  const [week, month] = await Promise.all([
-    getProductMetricsSummary(product.id, 7),
-    getProductMetricsSummary(product.id, 30),
-  ]);
 
   return (
     <div>
@@ -39,12 +40,14 @@ export default async function EditarProdutoPage({ params }: Props) {
         <h1 className="text-2xl font-bold">Editar produto</h1>
         <DeleteProductButton productId={product.id} productTitle={product.title} />
       </div>
-      <ProductMetricsPanel
-        productId={product.id}
-        productSlug={product.slug}
-        week={week}
-        month={month}
-      />
+      {metricsEnabled && metrics ? (
+        <ProductMetricsPanel
+          productId={product.id}
+          productSlug={product.slug}
+          week={metrics[0]}
+          month={metrics[1]}
+        />
+      ) : null}
       <ProductForm
         product={product}
         stores={stores}

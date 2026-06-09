@@ -1,11 +1,11 @@
 import Link from "next/link";
-import type { ProductWithRelations } from "@/lib/catalog";
+import type { ProductListItem } from "@/lib/catalog";
 
 type Props = {
   title: string;
   description: string;
   href: string;
-  products: ProductWithRelations[];
+  products: ProductListItem[];
 };
 
 export function ViralBanner({ title, description, href, products }: Props) {

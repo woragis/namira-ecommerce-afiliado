@@ -1,4 +1,5 @@
 import { AdminShell } from "@/components/admin/admin-shell";
+import { isAdminMetricsEnabled } from "@/lib/admin-metrics-flag";
 
 /** Admin depende do banco em runtime — não pré-renderizar no build. */
 export const dynamic = "force-dynamic";
@@ -8,5 +9,9 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <AdminShell>{children}</AdminShell>;
+  return (
+    <AdminShell metricsEnabled={isAdminMetricsEnabled()}>
+      {children}
+    </AdminShell>
+  );
 }

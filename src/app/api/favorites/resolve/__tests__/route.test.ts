@@ -15,7 +15,7 @@ vi.mock("@/lib/safe-db", () => ({
 }));
 
 vi.mock("@/lib/catalog", () => ({
-  productInclude: {},
+  productListInclude: {},
 }));
 
 import { POST } from "@/app/api/favorites/resolve/route";

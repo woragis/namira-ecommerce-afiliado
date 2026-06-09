@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isDatabaseConfigured } from "@/lib/safe-db";
-import { productInclude } from "@/lib/catalog";
+import { productListInclude } from "@/lib/catalog";
 
 export async function POST(request: Request) {
   if (!isDatabaseConfigured()) {
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
 
   const products = await prisma.product.findMany({
     where: { id: { in: ids }, isPublished: true },
-    include: productInclude,
+    include: productListInclude,
   });
 
   return NextResponse.json({ products });

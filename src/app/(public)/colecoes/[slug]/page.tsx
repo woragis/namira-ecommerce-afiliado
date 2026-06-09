@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { getCollectionBySlug } from "@/lib/catalog";
-import type { ProductWithRelations } from "@/lib/catalog";
+import type { ProductListItem } from "@/lib/catalog";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -12,7 +12,7 @@ export default async function ColecaoPage({ params }: Props) {
 
   const products = collection.products
     .map((cp) => cp.product)
-    .filter((p) => p.isPublished) as ProductWithRelations[];
+    .filter((p) => p.isPublished) as ProductListItem[];
 
   return (
     <main className="px-6 py-9 md:px-10">
