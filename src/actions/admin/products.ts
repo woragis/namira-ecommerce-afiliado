@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { safeDbQuery } from "@/lib/safe-db";
 import { ensureShareCode, generateUniqueShareCode } from "@/lib/share-code";
 import { slugify } from "@/lib/slugify";
 import {
@@ -153,10 +154,14 @@ export async function updateProduct(id: string, formData: FormData) {
     parseMediaPayload(String(formData.get("mediaPayload") ?? "")),
   );
 
-  const existingBefore = await prisma.product.findUnique({
-    where: { id },
-    select: { shareCode: true },
-  });
+  const existingBefore = await safeDbQuery(
+    () =>
+      prisma.product.findUnique({
+        where: { id },
+        select: { shareCode: true },
+      }),
+    { shareCode: null },
+  );
 
   await prisma.product.update({
     where: { id },
@@ -184,11 +189,21 @@ export async function updateProduct(id: string, formData: FormData) {
   );
   await syncProductMedia(id, formData);
 
-  await ensureShareCode(id, existingBefore?.shareCode);
+  await safeDbQuery(
+    () => ensureShareCode(id, existingBefore?.shareCode),
+    null,
+  );
 
   revalidateProductCatalog(slug);
   revalidatePath("/admin/produtos");
   redirect("/admin/produtos");
+}
+
+/** Wrapper para formulários client (evita .bind() em Server Action). */
+export async function updateProductFromForm(formData: FormData) {
+  const id = String(formData.get("productId") ?? "").trim();
+  if (!id) throw new Error("Produto inválido");
+  return updateProduct(id, formData);
 }
 
 async function refreshStoreCounts() {

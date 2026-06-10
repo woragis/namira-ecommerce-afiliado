@@ -8,8 +8,8 @@ import { isNamiraSchemaReady, safeDbQuery } from "@/lib/admin-db";
 import { isAdminMetricsEnabled } from "@/lib/admin-metrics-flag";
 import { getProductMetricsSummary } from "@/lib/analytics-stats";
 import { prisma } from "@/lib/db";
+import { toProductFormInput } from "@/lib/product-form-data";
 import { isDatabaseConfigured } from "@/lib/safe-db";
-import { ensureShareCode } from "@/lib/share-code";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -32,17 +32,35 @@ export default async function EditarProdutoPage({ params }: Props) {
   const metricsEnabled = isAdminMetricsEnabled();
 
   const [product, stores, categories, badges, metrics] = await Promise.all([
-    prisma.product.findUnique({
-      where: { id },
-      include: {
-        categories: { select: { categoryId: true } },
-        badges: { select: { badgeId: true } },
-        media: { orderBy: { sortOrder: "asc" } },
-      },
-    }),
-    prisma.store.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),
-    prisma.category.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),
-    prisma.badge.findMany(),
+    safeDbQuery(
+      () =>
+        prisma.product.findUnique({
+          where: { id },
+          include: {
+            categories: { select: { categoryId: true } },
+            badges: { select: { badgeId: true } },
+            media: { orderBy: { sortOrder: "asc" } },
+          },
+        }),
+      null,
+    ),
+    safeDbQuery(
+      () =>
+        prisma.store.findMany({
+          where: { isActive: true },
+          orderBy: { sortOrder: "asc" },
+        }),
+      [],
+    ),
+    safeDbQuery(
+      () =>
+        prisma.category.findMany({
+          where: { isActive: true },
+          orderBy: { sortOrder: "asc" },
+        }),
+      [],
+    ),
+    safeDbQuery(() => prisma.badge.findMany(), []),
     metricsEnabled
       ? safeDbQuery(
           () =>
@@ -57,7 +75,7 @@ export default async function EditarProdutoPage({ params }: Props) {
 
   if (!product) notFound();
 
-  const shareCode = await ensureShareCode(product.id, product.shareCode);
+  const productFormInput = toProductFormInput(product);
 
   return (
     <div>
@@ -65,7 +83,13 @@ export default async function EditarProdutoPage({ params }: Props) {
         <h1 className="text-2xl font-bold">Editar produto</h1>
         <DeleteProductButton productId={product.id} productTitle={product.title} />
       </div>
-      <AdminProductShareLinks shareCode={shareCode} slug={product.slug} />
+      {product.shareCode ? (
+        <AdminProductShareLinks shareCode={product.shareCode} slug={product.slug} />
+      ) : (
+        <p className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 text-sm text-zinc-400">
+          O link curto será gerado automaticamente ao salvar o produto.
+        </p>
+      )}
       {metricsEnabled && metrics ? (
         <ProductMetricsPanel
           productId={product.id}
@@ -75,7 +99,7 @@ export default async function EditarProdutoPage({ params }: Props) {
         />
       ) : null}
       <ProductForm
-        product={product}
+        product={productFormInput}
         stores={stores}
         categories={categories}
         badges={badges}

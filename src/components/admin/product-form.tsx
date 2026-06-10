@@ -1,35 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { createProduct, updateProduct } from "@/actions/admin/products";
+import { createProduct, updateProductFromForm } from "@/actions/admin/products";
 import { slugify } from "@/lib/slugify";
 import { legacyMediaPayload, mediaToDrafts } from "@/lib/product-media";
+import type { ProductFormInput } from "@/lib/product-form-data";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { ProductMediaManager } from "./product-media-manager";
-import type { Badge, Category, Product, ProductMedia, Store } from "@prisma/client";
-
-type ProductWithRelations = Product & {
-  categories: { categoryId: string }[];
-  badges: { badgeId: string }[];
-  media?: ProductMedia[];
-};
+import type { Badge, Category, Store } from "@prisma/client";
 
 type Props = {
   stores: Store[];
   categories: Category[];
   badges: Badge[];
-  product?: ProductWithRelations;
+  product?: ProductFormInput;
 };
 
-function initialMedia(product?: ProductWithRelations) {
+function initialMedia(product?: ProductFormInput) {
   if (product?.media?.length) return mediaToDrafts(product.media);
   return legacyMediaPayload(product?.imageUrl, product?.imageStoragePath);
 }
 
 export function ProductForm({ stores, categories, badges, product }: Props) {
-  const action = product
-    ? updateProduct.bind(null, product.id)
-    : createProduct;
+  const action = product ? updateProductFromForm : createProduct;
 
   const [title, setTitle] = useState(product?.title ?? "");
   const [slug, setSlug] = useState(product?.slug ?? "");
@@ -47,6 +40,7 @@ export function ProductForm({ stores, categories, badges, product }: Props) {
 
   return (
     <form action={action} className="max-w-lg space-y-4">
+      {product ? <input type="hidden" name="productId" value={product.id} /> : null}
       <label className="block text-sm">
         <span className="mb-1 block text-zinc-400">Título</span>
         <input
@@ -106,7 +100,7 @@ export function ProductForm({ stores, categories, badges, product }: Props) {
         name="priceCurrent"
         type="number"
         step="0.01"
-        defaultValue={product ? String(product.priceCurrent) : ""}
+        defaultValue={product?.priceCurrent ?? ""}
         required
       />
       <Field
@@ -114,9 +108,7 @@ export function ProductForm({ stores, categories, badges, product }: Props) {
         name="priceOriginal"
         type="number"
         step="0.01"
-        defaultValue={
-          product?.priceOriginal ? String(product.priceOriginal) : ""
-        }
+        defaultValue={product?.priceOriginal ?? ""}
       />
       <Field
         label="Descrição"
