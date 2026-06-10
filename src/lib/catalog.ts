@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { safeDbQuery } from "@/lib/safe-db";
@@ -216,16 +217,30 @@ export async function getFeaturedProducts(limit = 8) {
   );
 }
 
-export async function getProductBySlug(slug: string) {
-  return safeDbQuery(
+async function fetchProductBySlug(slug: string): Promise<ProductWithRelations | null> {
+  const base = await safeDbQuery(
     () =>
       prisma.product.findFirst({
         where: { slug, isPublished: true },
-        include: productInclude,
+        include: productListInclude,
       }),
     null,
   );
+  if (!base) return null;
+
+  const media = await safeDbQuery(
+    () =>
+      prisma.productMedia.findMany({
+        where: { productId: base.id },
+        orderBy: { sortOrder: "asc" },
+      }),
+    [],
+  );
+
+  return { ...base, media };
 }
+
+export const getProductBySlug = cache(fetchProductBySlug);
 
 export async function getStoreBySlug(slug: string) {
   return safeDbQuery(

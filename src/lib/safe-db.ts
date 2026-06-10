@@ -9,6 +9,7 @@ export function isDatabaseConfigured(): boolean {
 
 const UNAVAILABLE_CODES = new Set([
   "P2021", // tabela não existe
+  "P2024", // timeout no pool de conexões
   "P1001", // não conecta ao servidor
   "P1000", // auth falhou
   "P1017", // conexão fechada
@@ -30,6 +31,8 @@ export function isPrismaUnavailableError(error: unknown): boolean {
       msg.includes("relation") ||
       msg.includes("prepared statement") ||
       msg.includes("connection") ||
+      msg.includes("pool") ||
+      msg.includes("timed out") ||
       msg.includes("server has closed")
     ) {
       return true;

@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { CatalogImage } from "@/components/catalog/catalog-image";
 import { FavoriteButton } from "@/components/catalog/favorite-button";
 import { ProductImpressionTracker } from "@/components/catalog/product-impression-tracker";
 import { WhatsAppShareButton } from "@/components/catalog/whatsapp-share-button";
@@ -29,7 +29,7 @@ export function ProductCard({ product }: Props) {
       <Link href={`/produtos/${product.slug}`} className="block no-underline text-inherit">
         <div className="relative aspect-square overflow-hidden bg-[var(--roxo-claro)]">
           {product.imageUrl ? (
-            <Image
+            <CatalogImage
               src={product.imageUrl}
               alt={product.imageAlt ?? product.title}
               fill

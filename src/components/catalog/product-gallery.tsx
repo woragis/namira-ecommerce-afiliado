@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
+import { CatalogImage } from "./catalog-image";
 
 type GalleryItem =
   | { type: "IMAGE"; url: string; alt: string }
@@ -37,7 +37,7 @@ export function ProductGallery({ items, fallbackAlt }: Props) {
             className="h-full w-full bg-black object-contain"
           />
         ) : (
-          <Image
+          <CatalogImage
             key={active.url}
             src={active.url}
             alt={active.alt}
@@ -90,20 +90,34 @@ export function ProductGallery({ items, fallbackAlt }: Props) {
   );
 }
 
+function isValidMediaUrl(url: string | null | undefined): url is string {
+  if (!url?.trim()) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export function buildGalleryItems(
   media: Array<{ type: "IMAGE" | "VIDEO"; url: string }>,
   fallbackImageUrl: string | null | undefined,
   alt: string,
 ): GalleryItem[] {
-  if (media.length) {
-    return media.map((item) =>
-      item.type === "VIDEO"
-        ? { type: "VIDEO" as const, url: item.url }
-        : { type: "IMAGE" as const, url: item.url, alt },
-    );
+  const fromMedia: GalleryItem[] = [];
+  for (const item of media) {
+    if (!isValidMediaUrl(item.url)) continue;
+    if (item.type === "VIDEO") {
+      fromMedia.push({ type: "VIDEO", url: item.url });
+    } else {
+      fromMedia.push({ type: "IMAGE", url: item.url, alt });
+    }
   }
 
-  if (fallbackImageUrl) {
+  if (fromMedia.length) return fromMedia;
+
+  if (isValidMediaUrl(fallbackImageUrl)) {
     return [{ type: "IMAGE", url: fallbackImageUrl, alt }];
   }
 
