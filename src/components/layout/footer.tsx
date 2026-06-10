@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink } from "@/components/ui/nav-link";
 import { Logo } from "./logo";
 import type { CategoryNavItem, StoreNavItem } from "@/types/catalog";
 
@@ -26,9 +26,9 @@ export function Footer({ stores, categories, disclaimer, instagramUrl }: Props) 
           <ul className="space-y-2 text-sm">
             {stores.map((s) => (
               <li key={s.id}>
-                <Link href={`/lojas/${s.slug}`} className="text-white/70 no-underline hover:text-white">
+                <NavLink href={`/lojas/${s.slug}`} className="text-white/70 no-underline hover:text-white">
                   {s.name}
-                </Link>
+                </NavLink>
               </li>
             ))}
           </ul>
@@ -40,9 +40,9 @@ export function Footer({ stores, categories, disclaimer, instagramUrl }: Props) 
           <ul className="space-y-2 text-sm">
             {categories.slice(0, 5).map((c) => (
               <li key={c.id}>
-                <Link href={`/categorias/${c.slug}`} className="text-white/70 no-underline hover:text-white">
+                <NavLink href={`/categorias/${c.slug}`} className="text-white/70 no-underline hover:text-white">
                   {c.name}
-                </Link>
+                </NavLink>
               </li>
             ))}
           </ul>
@@ -52,9 +52,9 @@ export function Footer({ stores, categories, disclaimer, instagramUrl }: Props) 
             Info
           </h4>
           <ul className="space-y-2 text-sm">
-            <li><Link href="/sobre" className="text-white/70 no-underline hover:text-white">Sobre</Link></li>
-            <li><Link href="/como-funciona" className="text-white/70 no-underline hover:text-white">Como funciona</Link></li>
-            <li><Link href="/contato" className="text-white/70 no-underline hover:text-white">Contato</Link></li>
+            <li><NavLink href="/sobre" className="text-white/70 no-underline hover:text-white">Sobre</NavLink></li>
+            <li><NavLink href="/como-funciona" className="text-white/70 no-underline hover:text-white">Como funciona</NavLink></li>
+            <li><NavLink href="/contato" className="text-white/70 no-underline hover:text-white">Contato</NavLink></li>
             {instagramUrl ? (
               <li>
                 <a

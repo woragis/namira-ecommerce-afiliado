@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { NavLink } from "@/components/ui/nav-link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { CategoryNavItem, StoreNavItem } from "@/types/catalog";
 
@@ -80,7 +80,7 @@ export function StoreFilterNav({ stores, categories }: Props) {
   return (
     <nav className="overflow-x-auto border-b border-[var(--borda)] bg-white px-6 md:px-10 [&::-webkit-scrollbar]:hidden">
       <div className="flex min-w-max items-center">
-        <Link
+        <NavLink
           href="/produtos"
           className="flex items-center gap-2 border-b-2 px-5 py-3.5 text-[13px] font-medium whitespace-nowrap no-underline transition-colors"
           style={{
@@ -93,14 +93,14 @@ export function StoreFilterNav({ stores, categories }: Props) {
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
           </svg>
           Todos
-        </Link>
+        </NavLink>
 
         <div className="mx-1 h-5 w-px bg-[var(--borda)]" />
 
         {stores.map((store) => {
           const active = activeStore === store.slug;
           return (
-            <Link
+            <NavLink
               key={store.id}
               href={storeHref(store.slug, pathname)}
               className="flex items-center gap-2 border-b-2 px-5 py-3.5 text-[13px] font-medium whitespace-nowrap no-underline transition-colors"
@@ -114,7 +114,7 @@ export function StoreFilterNav({ stores, categories }: Props) {
             >
               <StoreLogo store={store} />
               {store.name}
-            </Link>
+            </NavLink>
           );
         })}
 
@@ -123,7 +123,7 @@ export function StoreFilterNav({ stores, categories }: Props) {
         {categories.map((cat) => {
           const active = activeCategory === cat.slug;
           return (
-            <Link
+            <NavLink
               key={cat.id}
               href={categoryHref(cat.slug, pathname, activeStore)}
               className="px-3.5 py-3.5 text-[13px] whitespace-nowrap no-underline transition-colors"
@@ -134,7 +134,7 @@ export function StoreFilterNav({ stores, categories }: Props) {
             >
               {cat.icon ? `${cat.icon} ` : ""}
               {cat.name}
-            </Link>
+            </NavLink>
           );
         })}
       </div>

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink } from "@/components/ui/nav-link";
 
 type Props = {
   page: number;
@@ -72,7 +72,7 @@ function PageLink({
   active?: boolean;
 }) {
   return (
-    <Link
+    <NavLink
       href={href}
       className={`min-w-[2.25rem] rounded-full px-3 py-1.5 text-center text-sm font-medium no-underline ${
         active
@@ -81,7 +81,7 @@ function PageLink({
       }`}
     >
       {label}
-    </Link>
+    </NavLink>
   );
 }
 

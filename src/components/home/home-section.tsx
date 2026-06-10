@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink } from "@/components/ui/nav-link";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import type { ProductListItem } from "@/lib/catalog";
 
@@ -19,12 +19,12 @@ export function HomeSection({ title, count, href, products }: Props) {
             {count} produtos
           </span>
         </h2>
-        <Link
+        <NavLink
           href={href}
           className="flex items-center gap-1 text-[13px] font-medium text-[var(--roxo-escuro)] no-underline hover:text-[var(--dourado-escuro)]"
         >
           Ver todos →
-        </Link>
+        </NavLink>
       </div>
       <ProductGrid products={products} />
     </section>

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink } from "@/components/ui/nav-link";
 import type { Badge } from "@prisma/client";
 
 type Props = {
@@ -27,7 +27,7 @@ export function BadgeFilters({
 
   return (
     <div className="mb-6 flex flex-wrap gap-2">
-      <Link
+      <NavLink
         href={href(null)}
         className={`rounded-full px-3 py-1.5 text-xs font-medium no-underline ${
           !activeSlug
@@ -36,9 +36,9 @@ export function BadgeFilters({
         }`}
       >
         Todos os selos
-      </Link>
+      </NavLink>
       {badges.map((b) => (
-        <Link
+        <NavLink
           key={b.slug}
           href={href(b.slug)}
           className={`rounded-full px-3 py-1.5 text-xs font-medium no-underline ${
@@ -48,7 +48,7 @@ export function BadgeFilters({
           }`}
         >
           {b.label}
-        </Link>
+        </NavLink>
       ))}
     </div>
   );

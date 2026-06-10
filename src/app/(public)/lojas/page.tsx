@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink } from "@/components/ui/nav-link";
 import { getActiveStores } from "@/lib/catalog";
 
 export const revalidate = 60;
@@ -16,7 +16,7 @@ export default async function LojasPage() {
       </p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stores.map((store) => (
-          <Link
+          <NavLink
             key={store.id}
             href={`/lojas/${store.slug}`}
             className="flex items-center gap-4 rounded-2xl border border-[var(--borda)] bg-white p-5 no-underline transition hover:-translate-y-0.5 hover:shadow-md"
@@ -37,7 +37,7 @@ export default async function LojasPage() {
                 {store.productCountCached} produtos
               </div>
             </div>
-          </Link>
+          </NavLink>
         ))}
       </div>
     </main>

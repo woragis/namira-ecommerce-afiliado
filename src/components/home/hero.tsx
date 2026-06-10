@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink } from "@/components/ui/nav-link";
 import type { StoreNavItem } from "@/types/catalog";
 
 type Props = {
@@ -44,7 +44,7 @@ export function Hero({ eyebrow, title, subtitle, stats, stores }: Props) {
       </div>
       <div className="relative z-10 flex flex-col gap-3">
         {stores.map((store) => (
-          <Link
+          <NavLink
             key={store.id}
             href={`/lojas/${store.slug}`}
             className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-4 py-3 no-underline transition hover:translate-x-1 hover:bg-white/10"
@@ -65,7 +65,7 @@ export function Hero({ eyebrow, title, subtitle, stats, stores }: Props) {
               </div>
             </div>
             <span className="text-white/35">›</span>
-          </Link>
+          </NavLink>
         ))}
       </div>
     </section>

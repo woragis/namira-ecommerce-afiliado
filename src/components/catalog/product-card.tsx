@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink } from "@/components/ui/nav-link";
 import { CatalogImage } from "@/components/catalog/catalog-image";
 import { FavoriteButton } from "@/components/catalog/favorite-button";
 import { ProductImpressionTracker } from "@/components/catalog/product-impression-tracker";
@@ -26,7 +26,7 @@ export function ProductCard({ product }: Props) {
   return (
     <ProductImpressionTracker productId={product.id}>
     <article className="group overflow-hidden rounded-2xl border border-[var(--borda)] bg-white transition hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(83,74,183,0.12)]">
-      <Link href={`/produtos/${product.slug}`} className="block no-underline text-inherit">
+      <NavLink href={`/produtos/${product.slug}`} className="block no-underline text-inherit">
         <div className="relative aspect-square overflow-hidden bg-[var(--roxo-claro)]">
           {product.imageUrl ? (
             <CatalogImage
@@ -100,7 +100,7 @@ export function ProductCard({ product }: Props) {
             ) : null}
           </div>
         </div>
-      </Link>
+      </NavLink>
       <div className="px-4 pb-4">
         <a
           href={`/r/${product.id}`}

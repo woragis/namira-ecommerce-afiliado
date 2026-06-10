@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink } from "@/components/ui/nav-link";
 import { Logo } from "./logo";
 import { SearchForm } from "./search-form";
 
@@ -28,18 +28,18 @@ export function Header({ bannerText }: Props) {
         <Logo />
         <SearchForm />
         <div className="hidden shrink-0 items-center gap-5 sm:flex">
-          <Link
+          <NavLink
             href="/favoritos"
             className="flex items-center gap-1.5 text-[13px] font-medium text-[var(--texto-suave)] no-underline hover:text-[var(--roxo-escuro)]"
           >
             Favoritos
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             href="/lojas"
             className="flex items-center gap-1.5 text-[13px] font-medium text-[var(--texto-suave)] no-underline hover:text-[var(--roxo-escuro)]"
           >
             Ver lojas
-          </Link>
+          </NavLink>
         </div>
       </div>
     </header>

@@ -49,7 +49,9 @@ const defaultSettings: Record<string, string> = {
   whatsapp_phone: "",
 };
 
-export async function getSiteSettings(): Promise<Record<string, string>> {
+export const getSiteSettings = cache(async function getSiteSettings(): Promise<
+  Record<string, string>
+> {
   return safeDbQuery(async () => {
     const rows = await prisma.siteSetting.findMany();
     return {
@@ -57,9 +59,9 @@ export async function getSiteSettings(): Promise<Record<string, string>> {
       ...Object.fromEntries(rows.map((r) => [r.key, r.value])),
     };
   }, defaultSettings);
-}
+});
 
-export async function getSiteSetting(
+export const getSiteSetting = cache(async function getSiteSetting(
   key: string,
   fallback = "",
 ): Promise<string> {
@@ -67,9 +69,9 @@ export async function getSiteSetting(
     const row = await prisma.siteSetting.findUnique({ where: { key } });
     return row?.value ?? fallback;
   }, fallback);
-}
+});
 
-export async function getActiveStores() {
+export const getActiveStores = cache(async function getActiveStores() {
   return safeDbQuery(
     () =>
       prisma.store.findMany({
@@ -78,16 +80,16 @@ export async function getActiveStores() {
       }),
     [],
   );
-}
+});
 
-export async function getBadges() {
+export const getBadges = cache(async function getBadges() {
   return safeDbQuery(
     () => prisma.badge.findMany({ orderBy: { label: "asc" } }),
     [],
   );
-}
+});
 
-export async function getNavCategories() {
+export const getNavCategories = cache(async function getNavCategories() {
   return safeDbQuery(
     () =>
       prisma.category.findMany({
@@ -96,7 +98,7 @@ export async function getNavCategories() {
       }),
     [],
   );
-}
+});
 
 export async function getHomeCollections() {
   return safeDbQuery(

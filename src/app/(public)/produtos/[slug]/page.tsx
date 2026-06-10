@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink } from "@/components/ui/nav-link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import {
@@ -74,13 +74,13 @@ export default async function ProdutoDetalhePage({ params }: Props) {
   return (
     <main className="px-6 py-9 md:px-10">
       <nav className="mb-6 text-sm text-[var(--texto-suave)]">
-        <Link href="/" className="no-underline hover:text-[var(--roxo-escuro)]">
+        <NavLink href="/" className="no-underline hover:text-[var(--roxo-escuro)]">
           Home
-        </Link>
+        </NavLink>
         {" / "}
-        <Link href="/produtos" className="no-underline hover:text-[var(--roxo-escuro)]">
+        <NavLink href="/produtos" className="no-underline hover:text-[var(--roxo-escuro)]">
           Produtos
-        </Link>
+        </NavLink>
         {" / "}
         <span className="text-[var(--texto)]">{product.title}</span>
       </nav>

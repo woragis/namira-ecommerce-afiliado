@@ -1,8 +1,8 @@
-import Link from "next/link";
+import { NavLink } from "@/components/ui/nav-link";
 
 export function Logo({ className = "" }: { className?: string }) {
   return (
-    <Link href="/" className={`flex shrink-0 items-baseline gap-0.5 no-underline ${className}`}>
+    <NavLink href="/" className={`flex shrink-0 items-baseline gap-0.5 no-underline ${className}`}>
       <span className="font-display text-[22px] font-bold text-[var(--roxo-escuro)]">
         Na
       </span>
@@ -12,6 +12,6 @@ export function Logo({ className = "" }: { className?: string }) {
       <span className="ml-1 text-[11px] font-medium uppercase tracking-[0.12em] text-[var(--texto-suave)]">
         Achados
       </span>
-    </Link>
+    </NavLink>
   );
 }

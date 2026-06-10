@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink } from "@/components/ui/nav-link";
 
 type Props = {
   title: string;
@@ -44,7 +44,7 @@ export function CatalogToolbar({
       </div>
       <div className="flex flex-wrap gap-2">
         {sorts.map((s) => (
-          <Link
+          <NavLink
             key={s.value}
             href={sortHref(s.value)}
             className={`rounded-full px-3 py-1.5 text-xs font-medium no-underline ${
@@ -54,7 +54,7 @@ export function CatalogToolbar({
             }`}
           >
             {s.label}
-          </Link>
+          </NavLink>
         ))}
       </div>
     </div>

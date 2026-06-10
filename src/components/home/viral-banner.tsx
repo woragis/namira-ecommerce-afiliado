@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink } from "@/components/ui/nav-link";
 import type { ProductListItem } from "@/lib/catalog";
 
 type Props = {
@@ -33,12 +33,12 @@ export function ViralBanner({ title, description, href, products }: Props) {
           </div>
         ))}
       </div>
-      <Link
+      <NavLink
         href={href}
         className="flex items-center gap-1 rounded-full bg-[var(--dourado)] px-5 py-2.5 text-sm font-semibold text-[var(--dourado-escuro)] no-underline"
       >
         Ver tudo →
-      </Link>
+      </NavLink>
     </div>
   );
 }
