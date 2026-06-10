@@ -193,6 +193,75 @@ async function refreshStoreCounts() {
   }
 }
 
+function parseProductIds(formData: FormData): string[] {
+  return formData.getAll("productIds").map(String).filter(Boolean);
+}
+
+function requireProductIds(formData: FormData): string[] {
+  const ids = parseProductIds(formData);
+  if (!ids.length) throw new Error("Selecione pelo menos um produto");
+  return ids;
+}
+
+export async function batchDeleteProducts(formData: FormData) {
+  const ids = requireProductIds(formData);
+  await prisma.product.deleteMany({ where: { id: { in: ids } } });
+  await refreshStoreCounts();
+  revalidatePath("/");
+  revalidatePath("/produtos");
+  revalidatePath("/admin/produtos");
+}
+
+export async function batchSetPublished(formData: FormData) {
+  const ids = requireProductIds(formData);
+  const published = formData.get("published") === "true";
+  const products = await prisma.product.updateMany({
+    where: { id: { in: ids } },
+    data: {
+      isPublished: published,
+      publishedAt: published ? new Date() : null,
+    },
+  });
+  if (products.count) {
+    const slugs = await prisma.product.findMany({
+      where: { id: { in: ids } },
+      select: { slug: true },
+    });
+    for (const { slug } of slugs) revalidateProductCatalog(slug);
+  }
+  revalidatePath("/admin/produtos");
+}
+
+export async function batchSetFeatured(formData: FormData) {
+  const ids = requireProductIds(formData);
+  await prisma.product.updateMany({
+    where: { id: { in: ids } },
+    data: { isFeatured: formData.get("featured") === "true" },
+  });
+  revalidatePath("/");
+  revalidatePath("/admin/produtos");
+}
+
+export async function batchUpdateStore(formData: FormData) {
+  const ids = requireProductIds(formData);
+  const storeId = String(formData.get("storeId") ?? "");
+  if (!storeId) throw new Error("Selecione uma loja");
+
+  const products = await prisma.product.findMany({
+    where: { id: { in: ids } },
+    select: { slug: true },
+  });
+
+  await prisma.product.updateMany({
+    where: { id: { in: ids } },
+    data: { storeId },
+  });
+
+  await refreshStoreCounts();
+  for (const { slug } of products) revalidateProductCatalog(slug);
+  revalidatePath("/admin/produtos");
+}
+
 export async function deleteProduct(id: string) {
   await prisma.product.delete({ where: { id } });
   await refreshStoreCounts();

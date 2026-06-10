@@ -6,8 +6,8 @@ export function AdminDbSetup() {
       </h2>
       <p className="mb-4 text-sm text-zinc-300">
         O login funcionou, mas as tabelas do catálogo (<code>stores</code>,{" "}
-        <code>products</code>, etc.) não existem neste Postgres — ou o{" "}
-        <code>DATABASE_URL</code> aponta para outro projeto.
+        <code>products</code>, <code>product_media</code>, etc.) não existem neste
+        Postgres — ou o <code>DATABASE_URL</code> aponta para outro projeto.
       </p>
       <ol className="list-decimal space-y-2 pl-5 text-sm text-zinc-400">
         <li>

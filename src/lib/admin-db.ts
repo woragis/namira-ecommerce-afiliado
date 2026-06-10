@@ -1,12 +1,15 @@
-import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { isDatabaseConfigured, safeDbQuery } from "@/lib/safe-db";
 
-/** Verifica se as tabelas da NaMira existem no banco conectado. */
+const REQUIRED_TABLES = ["stores", "products", "product_media"] as const;
+
+/** Verifica se as tabelas essenciais da NaMira existem no banco conectado. */
 export async function isNamiraSchemaReady(): Promise<boolean> {
   if (!isDatabaseConfigured()) return false;
   return safeDbQuery(async () => {
-    await prisma.$queryRaw`SELECT 1 FROM "stores" LIMIT 1`;
+    for (const table of REQUIRED_TABLES) {
+      await prisma.$queryRawUnsafe(`SELECT 1 FROM "${table}" LIMIT 1`);
+    }
     return true;
   }, false);
 }

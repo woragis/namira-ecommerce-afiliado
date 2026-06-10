@@ -10,17 +10,7 @@ type Props = {
 
 export function DeleteProductButton({ productId, productTitle }: Props) {
   const [open, setOpen] = useState(false);
-  const [pending, setPending] = useState(false);
-
-  async function handleDelete() {
-    setPending(true);
-    try {
-      await deleteProduct(productId);
-    } catch {
-      setPending(false);
-      setOpen(false);
-    }
-  }
+  const deleteAction = deleteProduct.bind(null, productId);
 
   return (
     <>
@@ -39,7 +29,10 @@ export function DeleteProductButton({ productId, productTitle }: Props) {
           aria-modal="true"
           aria-labelledby="delete-title"
         >
-          <div className="w-full max-w-md rounded-2xl border border-zinc-700 bg-zinc-900 p-6 shadow-xl">
+          <form
+            action={deleteAction}
+            className="w-full max-w-md rounded-2xl border border-zinc-700 bg-zinc-900 p-6 shadow-xl"
+          >
             <h2 id="delete-title" className="mb-2 text-lg font-bold text-white">
               Excluir produto?
             </h2>
@@ -51,22 +44,19 @@ export function DeleteProductButton({ productId, productTitle }: Props) {
             <div className="flex justify-end gap-3">
               <button
                 type="button"
-                disabled={pending}
                 onClick={() => setOpen(false)}
                 className="rounded-lg border border-zinc-600 px-4 py-2 text-sm text-zinc-300 cursor-pointer hover:bg-zinc-800"
               >
                 Cancelar
               </button>
               <button
-                type="button"
-                disabled={pending}
-                onClick={handleDelete}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white cursor-pointer hover:bg-red-500 disabled:opacity-50"
+                type="submit"
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white cursor-pointer hover:bg-red-500"
               >
-                {pending ? "Excluindo…" : "Sim, excluir"}
+                Sim, excluir
               </button>
             </div>
-          </div>
+          </form>
         </div>
       ) : null}
     </>

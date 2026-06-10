@@ -1,13 +1,10 @@
 import Link from "next/link";
 import { AdminDbSetup } from "@/components/admin/admin-db-setup";
+import { ProductsAdminTable } from "@/components/admin/products-admin-table";
 import { prisma } from "@/lib/db";
 import { isNamiraSchemaReady, safeDbQuery } from "@/lib/admin-db";
 import { isAdminMetricsEnabled } from "@/lib/admin-metrics-flag";
 import { isDatabaseConfigured } from "@/lib/safe-db";
-import {
-  toggleProductFeatured,
-  toggleProductPublished,
-} from "@/actions/admin/products";
 import type { Prisma } from "@prisma/client";
 
 const PAGE_SIZE = 50;
@@ -140,96 +137,23 @@ export default async function AdminProdutosPage({ searchParams }: Props) {
         {totalPages > 1
           ? ` · página ${safePage} de ${totalPages}`
           : null}
+        {" · "}
+        Selecione linhas para ações em lote (publicar, excluir, mover loja…)
       </p>
 
-      <div className="overflow-x-auto rounded-xl border border-zinc-800">
-        <table className="w-full min-w-[640px] text-left text-sm">
-          <thead className="bg-zinc-900 text-zinc-400">
-            <tr>
-              <th className="p-3">Título</th>
-              <th className="p-3">Loja</th>
-              <th className="p-3">Preço</th>
-              <th className="p-3">Destaque</th>
-              <th className="p-3">Publicado</th>
-              <th className="p-3" />
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((p) => (
-              <tr key={p.id} className="border-t border-zinc-800">
-                <td className="max-w-xs truncate p-3">
-                  <Link
-                    href={`/admin/produtos/${p.id}`}
-                    className="text-white no-underline hover:text-amber-400"
-                  >
-                    {p.title}
-                  </Link>
-                </td>
-                <td className="p-3" style={{ color: p.store.colorPrimary }}>
-                  {p.store.name}
-                </td>
-                <td className="p-3">R$ {Number(p.priceCurrent).toFixed(2)}</td>
-                <td className="p-3">
-                  <form
-                    action={toggleProductFeatured.bind(null, p.id, !p.isFeatured)}
-                  >
-                    <button
-                      type="submit"
-                      className={`cursor-pointer text-xs ${p.isFeatured ? "text-amber-400" : "text-zinc-500"}`}
-                      title="Destaque na home"
-                    >
-                      {p.isFeatured ? "⭐ Sim" : "Não"}
-                    </button>
-                  </form>
-                </td>
-                <td className="p-3">
-                  <form
-                    action={toggleProductPublished.bind(
-                      null,
-                      p.id,
-                      !p.isPublished,
-                    )}
-                  >
-                    <button
-                      type="submit"
-                      className={`cursor-pointer text-xs ${p.isPublished ? "text-green-400" : "text-zinc-500"}`}
-                    >
-                      {p.isPublished ? "Sim" : "Não"}
-                    </button>
-                  </form>
-                </td>
-                <td className="p-3 text-right whitespace-nowrap">
-                  {metricsEnabled ? (
-                    <Link
-                      href={`/admin/metricas?days=30&product=${p.slug}`}
-                      className="mr-3 text-xs text-zinc-500 no-underline hover:text-amber-400"
-                    >
-                      Métricas
-                    </Link>
-                  ) : null}
-                  {p.isPublished ? (
-                    <Link
-                      href={`/produtos/${p.slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-zinc-500 no-underline hover:text-amber-400"
-                    >
-                      Ver na loja
-                    </Link>
-                  ) : (
-                    <span
-                      className="text-xs text-zinc-600"
-                      title="Marque Publicado como Sim para exibir na loja"
-                    >
-                      Rascunho
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <ProductsAdminTable
+        products={products.map((p) => ({
+          id: p.id,
+          title: p.title,
+          slug: p.slug,
+          priceCurrent: p.priceCurrent,
+          isFeatured: p.isFeatured,
+          isPublished: p.isPublished,
+          store: p.store,
+        }))}
+        stores={stores}
+        metricsEnabled={metricsEnabled}
+      />
 
       {totalPages > 1 ? (
         <nav className="mt-6 flex flex-wrap items-center justify-center gap-2 text-sm">

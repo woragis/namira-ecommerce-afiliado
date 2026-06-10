@@ -1,15 +1,32 @@
 import { notFound } from "next/navigation";
+import { AdminDbSetup } from "@/components/admin/admin-db-setup";
 import { DeleteProductButton } from "@/components/admin/delete-product-button";
 import { ProductMetricsPanel } from "@/components/admin/metrics/product-metrics-panel";
 import { ProductForm } from "@/components/admin/product-form";
+import { isNamiraSchemaReady, safeDbQuery } from "@/lib/admin-db";
 import { isAdminMetricsEnabled } from "@/lib/admin-metrics-flag";
 import { getProductMetricsSummary } from "@/lib/analytics-stats";
 import { prisma } from "@/lib/db";
+import { isDatabaseConfigured } from "@/lib/safe-db";
 
 type Props = { params: Promise<{ id: string }> };
 
 export default async function EditarProdutoPage({ params }: Props) {
   const { id } = await params;
+
+  if (!isDatabaseConfigured()) {
+    return <p className="text-zinc-400">Banco não configurado.</p>;
+  }
+
+  if (!(await isNamiraSchemaReady())) {
+    return (
+      <div>
+        <h1 className="mb-6 text-2xl font-bold">Editar produto</h1>
+        <AdminDbSetup />
+      </div>
+    );
+  }
+
   const metricsEnabled = isAdminMetricsEnabled();
 
   const [product, stores, categories, badges, metrics] = await Promise.all([
@@ -25,10 +42,14 @@ export default async function EditarProdutoPage({ params }: Props) {
     prisma.category.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),
     prisma.badge.findMany(),
     metricsEnabled
-      ? Promise.all([
-          getProductMetricsSummary(id, 7),
-          getProductMetricsSummary(id, 30),
-        ])
+      ? safeDbQuery(
+          () =>
+            Promise.all([
+              getProductMetricsSummary(id, 7),
+              getProductMetricsSummary(id, 30),
+            ]),
+          null,
+        )
       : Promise.resolve(null),
   ]);
 
