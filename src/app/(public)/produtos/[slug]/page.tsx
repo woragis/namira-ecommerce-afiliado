@@ -1,14 +1,12 @@
 import { NavLink } from "@/components/ui/nav-link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import {
-  buildGalleryItems,
-  ProductGallery,
-} from "@/components/catalog/product-gallery";
+import { ProductGallery } from "@/components/catalog/product-gallery";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { WhatsAppShareButton } from "@/components/catalog/whatsapp-share-button";
 import { hashUserAgent, recordProductView } from "@/lib/analytics";
 import { formatPrice, getProductBySlug, getProducts } from "@/lib/catalog";
+import { buildGalleryItems } from "@/lib/gallery-items";
 
 type Props = { params: Promise<{ slug: string }> };
 
