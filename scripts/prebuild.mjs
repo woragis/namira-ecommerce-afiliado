@@ -13,7 +13,7 @@ if (!process.env.DATABASE_URL?.trim()) {
 
 console.log("[prebuild] Aplicando schema Prisma no banco (db push)…");
 try {
-  execSync("npx prisma db push --skip-generate", {
+  execSync("npx prisma db push --skip-generate --accept-data-loss", {
     cwd: root,
     env: process.env,
     encoding: "utf8",

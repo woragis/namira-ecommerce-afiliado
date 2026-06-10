@@ -15,7 +15,7 @@
     "test:all": "npm test && npm run test:integration && npm run test:e2e",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:push": "prisma db push",
+    "db:push": "prisma db push --accept-data-loss",
     "db:seed": "node scripts/run-seed.mjs ensure",
     "db:seed:ensure": "node scripts/run-seed.mjs ensure",
     "db:seed:demo": "node scripts/run-seed.mjs demo",
