@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { ensureShareCode, generateUniqueShareCode } from "@/lib/share-code";
 import { slugify } from "@/lib/slugify";
 import {
   parseMediaPayload,
@@ -95,10 +96,13 @@ export async function createProduct(formData: FormData) {
     parseMediaPayload(String(formData.get("mediaPayload") ?? "")),
   );
 
+  const shareCode = await generateUniqueShareCode();
+
   const product = await prisma.product.create({
     data: {
       title: d.title,
       slug,
+      shareCode,
       description: d.description || null,
       imageUrl: primaryImage.imageUrl,
       imageStoragePath: primaryImage.imageStoragePath,
@@ -149,6 +153,11 @@ export async function updateProduct(id: string, formData: FormData) {
     parseMediaPayload(String(formData.get("mediaPayload") ?? "")),
   );
 
+  const existingBefore = await prisma.product.findUnique({
+    where: { id },
+    select: { shareCode: true },
+  });
+
   await prisma.product.update({
     where: { id },
     data: {
@@ -174,6 +183,8 @@ export async function updateProduct(id: string, formData: FormData) {
     parseIds(formData, "badgeIds"),
   );
   await syncProductMedia(id, formData);
+
+  await ensureShareCode(id, existingBefore?.shareCode);
 
   revalidateProductCatalog(slug);
   revalidatePath("/admin/produtos");

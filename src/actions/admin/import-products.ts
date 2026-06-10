@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { parseCsv, rowsToObjects } from "@/lib/csv";
 import { slugify } from "@/lib/slugify";
+import { ensureShareCode, generateUniqueShareCode } from "@/lib/share-code";
 
 export type ImportResult = {
   created: number;
@@ -120,7 +121,10 @@ export async function importProductsFromCsv(
     const badgeSlugs = splitList(row.badges ?? row.selos ?? "");
 
     try {
-      const existing = await prisma.product.findUnique({ where: { slug } });
+      const existing = await prisma.product.findUnique({
+        where: { slug },
+        select: { id: true, shareCode: true },
+      });
 
       if (existing && !updateExisting) {
         result.skipped++;
@@ -154,8 +158,14 @@ export async function importProductsFromCsv(
         });
         productId = existing.id;
         result.updated++;
+        if (!existing.shareCode) {
+          await ensureShareCode(existing.id);
+        }
       } else {
-        const created = await prisma.product.create({ data: productData });
+        const shareCode = await generateUniqueShareCode();
+        const created = await prisma.product.create({
+          data: { ...productData, shareCode },
+        });
         productId = created.id;
         result.created++;
       }

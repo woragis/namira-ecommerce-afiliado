@@ -87,6 +87,7 @@ model Product {
   sortPriority    Int                @default(0) @map("sort_priority")
   metaTitle       String?            @map("meta_title")
   metaDescription String?            @map("meta_description")
+  shareCode       String?            @unique @map("share_code")
   createdAt       DateTime           @default(now()) @map("created_at")
   updatedAt       DateTime           @updatedAt @map("updated_at")
   store           Store              @relation(fields: [storeId], references: [id])

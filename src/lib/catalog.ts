@@ -280,12 +280,29 @@ export async function getCategoryBySlug(slug: string) {
   );
 }
 
-export async function getPublishedProductForRedirect(id: string) {
+export async function getPublishedProductForRedirect(key: string) {
   return safeDbQuery(
     () =>
       prisma.product.findFirst({
-        where: { id, isPublished: true },
-        select: { id: true, affiliateUrl: true, title: true },
+        where: {
+          isPublished: true,
+          OR: [{ id: key }, { shareCode: key }, { slug: key }],
+        },
+        select: { id: true, affiliateUrl: true, title: true, slug: true, shareCode: true },
+      }),
+    null,
+  );
+}
+
+export async function getPublishedProductByShareCode(code: string) {
+  return safeDbQuery(
+    () =>
+      prisma.product.findFirst({
+        where: {
+          isPublished: true,
+          OR: [{ shareCode: code }, { slug: code }],
+        },
+        select: { id: true, slug: true, shareCode: true },
       }),
     null,
   );

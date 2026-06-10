@@ -1,3 +1,4 @@
+import { CopyShareLinkButton } from "@/components/copy-share-link-button";
 import { NavLink } from "@/components/ui/nav-link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
@@ -8,6 +9,12 @@ import { hashUserAgent, recordProductView } from "@/lib/analytics";
 import { formatPrice, getProductBySlug, getProducts } from "@/lib/catalog";
 import { buildGalleryItems } from "@/lib/gallery-items";
 import { displayProductDescription, displayProductTitle } from "@/lib/product-display";
+import {
+  buildProductShareUrl,
+  ensureShareCode,
+  resolveAffiliatePath,
+  resolveProductSharePath,
+} from "@/lib/share-code";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -47,6 +54,11 @@ export default async function ProdutoDetalhePage({ params }: Props) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) notFound();
+
+  const shareCode = await ensureShareCode(product.id, product.shareCode);
+  const sharePath = resolveProductSharePath({ shareCode, slug: product.slug });
+  const shareUrl = buildProductShareUrl(shareCode);
+  const affiliatePath = resolveAffiliatePath({ shareCode, id: product.id });
 
   const hdrs = await headers();
   const ua = hdrs.get("user-agent") ?? "";
@@ -133,7 +145,7 @@ export default async function ProdutoDetalhePage({ params }: Props) {
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <a
-              href={`/r/${product.id}`}
+              href={affiliatePath}
               className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl py-4 text-base font-semibold text-white no-underline sm:min-w-[200px]"
               style={{ backgroundColor: store.colorPrimary }}
             >
@@ -141,10 +153,17 @@ export default async function ProdutoDetalhePage({ params }: Props) {
             </a>
             <WhatsAppShareButton
               title={displayTitle}
-              productPath={`/produtos/${product.slug}`}
+              productPath={sharePath}
               className="flex-1 sm:min-w-[200px]"
             />
+            <CopyShareLinkButton url={shareUrl} className="flex-1 sm:min-w-[200px]" />
           </div>
+          <p className="mt-3 text-xs text-[var(--texto-suave)]">
+            Link curto:{" "}
+            <code className="rounded bg-[var(--roxo-claro)] px-1.5 py-0.5 text-[var(--roxo-escuro)]">
+              {sharePath}
+            </code>
+          </p>
           <p className="mt-4 text-xs text-[var(--texto-suave)]">
             Link de afiliado — você será redirecionado para a loja oficial.
           </p>

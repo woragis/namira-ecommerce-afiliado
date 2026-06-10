@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { AdminProductShareLinks } from "@/components/admin/admin-product-share-links";
 import { AdminDbSetup } from "@/components/admin/admin-db-setup";
 import { DeleteProductButton } from "@/components/admin/delete-product-button";
 import { ProductMetricsPanel } from "@/components/admin/metrics/product-metrics-panel";
@@ -8,6 +9,7 @@ import { isAdminMetricsEnabled } from "@/lib/admin-metrics-flag";
 import { getProductMetricsSummary } from "@/lib/analytics-stats";
 import { prisma } from "@/lib/db";
 import { isDatabaseConfigured } from "@/lib/safe-db";
+import { ensureShareCode } from "@/lib/share-code";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -55,12 +57,15 @@ export default async function EditarProdutoPage({ params }: Props) {
 
   if (!product) notFound();
 
+  const shareCode = await ensureShareCode(product.id, product.shareCode);
+
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <h1 className="text-2xl font-bold">Editar produto</h1>
         <DeleteProductButton productId={product.id} productTitle={product.title} />
       </div>
+      <AdminProductShareLinks shareCode={shareCode} slug={product.slug} />
       {metricsEnabled && metrics ? (
         <ProductMetricsPanel
           productId={product.id}

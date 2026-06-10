@@ -5,6 +5,7 @@ import { ProductImpressionTracker } from "@/components/catalog/product-impressio
 import { WhatsAppShareButton } from "@/components/catalog/whatsapp-share-button";
 import { formatPrice, type ProductListItem } from "@/lib/catalog";
 import { displayProductTitle } from "@/lib/product-display";
+import { resolveAffiliatePath, resolveProductSharePath } from "@/lib/share-code";
 import type { BadgeStyle } from "@prisma/client";
 
 const badgeClass: Record<BadgeStyle, string> = {
@@ -24,6 +25,8 @@ export function ProductCard({ product }: Props) {
     ? Number(product.priceOriginal)
     : null;
   const productHref = `/produtos/${product.slug}`;
+  const sharePath = resolveProductSharePath(product);
+  const affiliatePath = resolveAffiliatePath(product);
   const displayTitle = displayProductTitle(product.title, 100);
 
   return (
@@ -76,7 +79,7 @@ export function ProductCard({ product }: Props) {
               <FavoriteButton productId={product.id} />
               <WhatsAppShareButton
                 title={displayTitle}
-                productPath={productHref}
+                productPath={sharePath}
                 variant="compact"
               />
             </div>
@@ -114,7 +117,7 @@ export function ProductCard({ product }: Props) {
         </NavLink>
         <div className="px-4 pb-4">
           <a
-            href={`/r/${product.id}`}
+            href={affiliatePath}
             className="flex w-full items-center justify-center gap-1.5 rounded-[10px] py-2.5 text-sm font-semibold text-white no-underline transition hover:opacity-90"
             style={{ backgroundColor: store.colorPrimary }}
           >

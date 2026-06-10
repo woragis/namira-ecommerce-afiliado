@@ -19,10 +19,12 @@ export function buildProductShareMessage(
   title: string,
   productPath: string,
 ): string {
-  const url = `${siteUrl}${productPath.startsWith("/") ? productPath : `/${productPath}`}`;
+  const path = productPath.startsWith("/") ? productPath : `/${productPath}`;
+  const url = `${siteUrl.replace(/\/$/, "")}${path}`;
   return `🔥 Achei isso na NaMira Achados:\n\n${title}\n\n${url}`;
 }
 
+/** @param productPath rota curta (/p/abc) ou legado (/produtos/slug) */
 export function buildProductShareUrl(title: string, productPath: string): string {
   return buildWhatsAppUrl(buildProductShareMessage(title, productPath));
 }
