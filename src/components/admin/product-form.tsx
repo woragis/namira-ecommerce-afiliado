@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createProduct, updateProduct } from "@/actions/admin/products";
 import { slugify } from "@/lib/slugify";
 import { legacyMediaPayload, mediaToDrafts } from "@/lib/product-media";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { ProductMediaManager } from "./product-media-manager";
 import type { Badge, Category, Product, ProductMedia, Store } from "@prisma/client";
 
@@ -175,9 +176,12 @@ export function ProductForm({ stores, categories, badges, product }: Props) {
         Destaque na home
       </label>
 
-      <button type="submit" className="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-zinc-950">
+      <SubmitButton
+        pendingLabel="Salvando…"
+        className="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-zinc-950 cursor-pointer"
+      >
         Salvar
-      </button>
+      </SubmitButton>
     </form>
   );
 }

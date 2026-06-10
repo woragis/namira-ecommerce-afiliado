@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createStore, updateStore } from "@/actions/admin/stores";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { StorageUpload } from "./storage-upload";
 import type { Store } from "@prisma/client";
 
@@ -103,9 +104,12 @@ export function StoreForm({ store }: Props) {
         </div>
       ) : null}
 
-      <button type="submit" className="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-zinc-950">
+      <SubmitButton
+        pendingLabel="Salvando…"
+        className="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-zinc-950 cursor-pointer"
+      >
         Salvar
-      </button>
+      </SubmitButton>
     </form>
   );
 }

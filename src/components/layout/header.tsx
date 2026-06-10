@@ -30,13 +30,15 @@ export function Header({ bannerText }: Props) {
         <div className="hidden shrink-0 items-center gap-5 sm:flex">
           <NavLink
             href="/favoritos"
-            className="flex items-center gap-1.5 text-[13px] font-medium text-[var(--texto-suave)] no-underline hover:text-[var(--roxo-escuro)]"
+            showPendingIndicator
+            className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[var(--texto-suave)] no-underline hover:text-[var(--roxo-escuro)]"
           >
             Favoritos
           </NavLink>
           <NavLink
             href="/lojas"
-            className="flex items-center gap-1.5 text-[13px] font-medium text-[var(--texto-suave)] no-underline hover:text-[var(--roxo-escuro)]"
+            showPendingIndicator
+            className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[var(--texto-suave)] no-underline hover:text-[var(--roxo-escuro)]"
           >
             Ver lojas
           </NavLink>

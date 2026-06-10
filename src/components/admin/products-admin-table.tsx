@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
+import { NavLink } from "@/components/ui/nav-link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
+import { SubmitButton } from "@/components/ui/submit-button";
 import {
   batchDeleteProducts,
   batchSetFeatured,
@@ -203,12 +204,13 @@ export function ProductsAdminTable({ products, stores, metricsEnabled }: Props) 
                   />
                 </td>
                 <td className="max-w-xs truncate p-3">
-                  <Link
+                  <NavLink
                     href={`/admin/produtos/${p.id}`}
+                    showPendingIndicator
                     className="text-white no-underline hover:text-amber-400"
                   >
                     {p.title}
-                  </Link>
+                  </NavLink>
                 </td>
                 <td className="p-3" style={{ color: p.store.colorPrimary }}>
                   {p.store.name}
@@ -218,13 +220,12 @@ export function ProductsAdminTable({ products, stores, metricsEnabled }: Props) 
                   <form
                     action={toggleProductFeatured.bind(null, p.id, !p.isFeatured)}
                   >
-                    <button
-                      type="submit"
+                    <SubmitButton
+                      pendingLabel="…"
                       className={`cursor-pointer text-xs ${p.isFeatured ? "text-amber-400" : "text-zinc-500"}`}
-                      title="Destaque na home"
                     >
                       {p.isFeatured ? "⭐ Sim" : "Não"}
-                    </button>
+                    </SubmitButton>
                   </form>
                 </td>
                 <td className="p-3">
@@ -235,38 +236,40 @@ export function ProductsAdminTable({ products, stores, metricsEnabled }: Props) 
                       !p.isPublished,
                     )}
                   >
-                    <button
-                      type="submit"
+                    <SubmitButton
+                      pendingLabel="…"
                       className={`cursor-pointer text-xs ${p.isPublished ? "text-green-400" : "text-zinc-500"}`}
                     >
                       {p.isPublished ? "Sim" : "Não"}
-                    </button>
+                    </SubmitButton>
                   </form>
                 </td>
                 <td className="p-3 text-right whitespace-nowrap">
-                  <Link
+                  <NavLink
                     href={`/admin/produtos/${p.id}`}
+                    showPendingIndicator
                     className="mr-3 text-xs text-zinc-500 no-underline hover:text-amber-400"
                   >
                     Editar
-                  </Link>
+                  </NavLink>
                   {metricsEnabled ? (
-                    <Link
+                    <NavLink
                       href={`/admin/metricas?days=30&product=${p.slug}`}
+                      showPendingIndicator
                       className="mr-3 text-xs text-zinc-500 no-underline hover:text-amber-400"
                     >
                       Métricas
-                    </Link>
+                    </NavLink>
                   ) : null}
                   {p.isPublished ? (
-                    <Link
+                    <a
                       href={`/produtos/${p.slug}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-zinc-500 no-underline hover:text-amber-400"
                     >
                       Ver na loja
-                    </Link>
+                    </a>
                   ) : (
                     <span
                       className="text-xs text-zinc-600"

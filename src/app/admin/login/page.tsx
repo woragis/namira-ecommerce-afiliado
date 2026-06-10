@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { loginAdmin } from "@/actions/admin/auth";
+import { NavLink } from "@/components/ui/nav-link";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { isAdminProtectionEnabled } from "@/lib/admin-auth";
 
 type Props = {
@@ -33,16 +34,20 @@ export default async function AdminLoginPage({ searchParams }: Props) {
               placeholder={protected_ ? "••••••••" : "opcional"}
             />
           </label>
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-amber-500 py-2.5 font-semibold text-zinc-950"
+          <SubmitButton
+            pendingLabel="Entrando…"
+            className="w-full rounded-lg bg-amber-500 py-2.5 font-semibold text-zinc-950 cursor-pointer"
           >
             Entrar
-          </button>
+          </SubmitButton>
         </form>
-        <Link href="/" className="mt-4 block text-center text-xs text-zinc-500 no-underline hover:text-zinc-300">
+        <NavLink
+          href="/"
+          showPendingIndicator
+          className="mt-4 block text-center text-xs text-zinc-500 no-underline hover:text-zinc-300"
+        >
           ← Voltar ao site
-        </Link>
+        </NavLink>
       </div>
     </div>
   );

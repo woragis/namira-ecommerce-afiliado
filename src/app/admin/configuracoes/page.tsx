@@ -1,4 +1,5 @@
 import { updateSiteSettings } from "@/actions/admin/settings";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { getSiteSettings } from "@/lib/catalog";
 import { isDatabaseConfigured } from "@/lib/safe-db";
 
@@ -55,9 +56,12 @@ export default async function AdminConfiguracoesPage() {
             )}
           </label>
         ))}
-        <button type="submit" className="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-zinc-950">
+        <SubmitButton
+          pendingLabel="Salvando…"
+          className="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-zinc-950 cursor-pointer"
+        >
           Salvar configurações
-        </button>
+        </SubmitButton>
       </form>
     </div>
   );

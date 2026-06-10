@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { CollectionType } from "@prisma/client";
 import { createCollection, deactivateCollection } from "@/actions/admin/collections";
+import { NavLink } from "@/components/ui/nav-link";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { prisma } from "@/lib/db";
 import { isDatabaseConfigured } from "@/lib/safe-db";
 
@@ -32,9 +33,12 @@ export default async function AdminColecoesPage() {
         </label>
         <input name="homeSortOrder" type="number" defaultValue={0} placeholder="Ordem na home" className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm" />
         <input name="maxProducts" type="number" defaultValue={12} className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm" />
-        <button type="submit" className="rounded-lg bg-amber-500 py-2 text-sm font-semibold text-zinc-950">
+        <SubmitButton
+          pendingLabel="Criando…"
+          className="rounded-lg bg-amber-500 py-2 text-sm font-semibold text-zinc-950 cursor-pointer"
+        >
           Criar coleção
-        </button>
+        </SubmitButton>
       </form>
 
       <ul className="space-y-2">
@@ -47,13 +51,20 @@ export default async function AdminColecoesPage() {
               </span>
             </div>
             <div>
-              <Link href={`/admin/colecoes/${c.id}`} className="text-amber-400 no-underline text-sm">
+              <NavLink
+                href={`/admin/colecoes/${c.id}`}
+                showPendingIndicator
+                className="text-amber-400 no-underline text-sm"
+              >
                 Gerenciar
-              </Link>
+              </NavLink>
               <form action={deactivateCollection.bind(null, c.id)} className="ml-3 inline">
-                <button type="submit" className="text-xs text-red-400 cursor-pointer">
+                <SubmitButton
+                  pendingLabel="…"
+                  className="text-xs text-red-400 cursor-pointer"
+                >
                   Desativar
-                </button>
+                </SubmitButton>
               </form>
             </div>
           </li>

@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { createCategory, deactivateCategory } from "@/actions/admin/categories";
+import { NavLink } from "@/components/ui/nav-link";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { prisma } from "@/lib/db";
 import { isDatabaseConfigured } from "@/lib/safe-db";
 
@@ -25,9 +26,12 @@ export default async function AdminCategoriasPage() {
           <input type="checkbox" name="showInNav" defaultChecked />
           Mostrar na navegação
         </label>
-        <button type="submit" className="rounded-lg bg-amber-500 py-2 text-sm font-semibold text-zinc-950 sm:col-span-2">
+        <SubmitButton
+          pendingLabel="Adicionando…"
+          className="rounded-lg bg-amber-500 py-2 text-sm font-semibold text-zinc-950 cursor-pointer sm:col-span-2"
+        >
           Adicionar categoria
-        </button>
+        </SubmitButton>
       </form>
 
       <table className="w-full text-left text-sm">
@@ -48,13 +52,20 @@ export default async function AdminCategoriasPage() {
               <td className="p-2 text-zinc-400">{c.slug}</td>
               <td className="p-2">{c.showInNav ? "Sim" : "Não"}</td>
               <td className="p-2 text-right">
-                <Link href={`/admin/categorias/${c.id}`} className="text-amber-400 no-underline">
+                <NavLink
+                  href={`/admin/categorias/${c.id}`}
+                  showPendingIndicator
+                  className="text-amber-400 no-underline"
+                >
                   Editar
-                </Link>
+                </NavLink>
                 <form action={deactivateCategory.bind(null, c.id)} className="ml-2 inline">
-                  <button type="submit" className="text-xs text-red-400 cursor-pointer">
+                  <SubmitButton
+                    pendingLabel="…"
+                    className="text-xs text-red-400 cursor-pointer"
+                  >
                     Desativar
-                  </button>
+                  </SubmitButton>
                 </form>
               </td>
             </tr>

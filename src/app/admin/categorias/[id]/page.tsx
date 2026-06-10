@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { updateCategory } from "@/actions/admin/categories";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { prisma } from "@/lib/db";
 
 type Props = { params: Promise<{ id: string }> };
@@ -25,9 +26,12 @@ export default async function EditarCategoriaPage({ params }: Props) {
           <input type="checkbox" name="isActive" defaultChecked={category.isActive} />
           Ativa
         </label>
-        <button type="submit" className="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-zinc-950">
+        <SubmitButton
+          pendingLabel="Salvando…"
+          className="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-zinc-950 cursor-pointer"
+        >
           Salvar
-        </button>
+        </SubmitButton>
       </form>
     </div>
   );

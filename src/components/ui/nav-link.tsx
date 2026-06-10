@@ -1,9 +1,24 @@
 import Link from "next/link";
 import type { ComponentProps } from "react";
+import { LinkPendingIndicator } from "./link-pending-indicator";
 
-type Props = ComponentProps<typeof Link>;
+type Props = ComponentProps<typeof Link> & {
+  showPendingIndicator?: boolean;
+};
 
-/** Link de navegação sem prefetch — evita dezenas de requests RSC + DB no layout. */
-export function NavLink({ prefetch = false, ...props }: Props) {
-  return <Link prefetch={prefetch} {...props} />;
+export function NavLink({
+  prefetch = true,
+  showPendingIndicator = true,
+  children,
+  className = "",
+  ...props
+}: Props) {
+  return (
+    <Link prefetch={prefetch} className={className} {...props}>
+      {children}
+      {showPendingIndicator ? (
+        <LinkPendingIndicator className="ml-1 align-middle" />
+      ) : null}
+    </Link>
+  );
 }

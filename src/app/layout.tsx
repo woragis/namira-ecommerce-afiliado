@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, Playfair_Display } from "next/font/google";
+import { Suspense } from "react";
+import { NavigationPendingProvider } from "@/components/ui/navigation-pending";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -51,7 +53,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR" className={`${playfair.variable} ${dmSans.variable} h-full`}>
-      <body className="flex min-h-full flex-col antialiased">{children}</body>
+      <body className="flex min-h-full flex-col antialiased">
+        <Suspense fallback={null}>
+          <NavigationPendingProvider>{children}</NavigationPendingProvider>
+        </Suspense>
+      </body>
     </html>
   );
 }

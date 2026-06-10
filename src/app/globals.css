@@ -39,3 +39,55 @@ body {
 .font-display {
   font-family: var(--font-playfair), Georgia, serif;
 }
+
+/* Navegação: barra no topo */
+.navigation-progress-bar {
+  width: 0;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.navigation-progress-bar.is-active {
+  opacity: 1;
+  animation: navigation-progress 1.2s ease-in-out infinite;
+}
+
+@keyframes navigation-progress {
+  0% {
+    width: 0;
+    margin-left: 0;
+  }
+  40% {
+    width: 65%;
+    margin-left: 0;
+  }
+  100% {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+/* Links: indicador sutil ao navegar */
+.link-hint {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.link-hint.is-pending {
+  visibility: visible;
+  animation:
+    link-hint-fade 200ms 100ms forwards,
+    link-hint-pulse 1s 100ms ease-in-out infinite;
+}
+
+@keyframes link-hint-fade {
+  to {
+    opacity: 0.45;
+  }
+}
+
+@keyframes link-hint-pulse {
+  50% {
+    opacity: 0.15;
+  }
+}

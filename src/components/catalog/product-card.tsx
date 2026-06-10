@@ -35,6 +35,7 @@ export function ProductCard({ product }: Props) {
         <div className="relative aspect-square overflow-hidden bg-[var(--roxo-claro)]">
           <NavLink
             href={productHref}
+            showPendingIndicator={false}
             className="absolute inset-0 z-[1] block no-underline text-inherit"
             aria-label={displayTitle}
           >
@@ -85,7 +86,11 @@ export function ProductCard({ product }: Props) {
             </div>
           </div>
         </div>
-        <NavLink href={productHref} className="block no-underline text-inherit">
+        <NavLink
+          href={productHref}
+          showPendingIndicator={false}
+          className="block no-underline text-inherit"
+        >
           <div className="p-4">
             <div
               className="mb-1 text-[10px] font-semibold tracking-wider uppercase"

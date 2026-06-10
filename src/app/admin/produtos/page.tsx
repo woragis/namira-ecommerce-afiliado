@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { AdminDbSetup } from "@/components/admin/admin-db-setup";
+import { NavLink } from "@/components/ui/nav-link";
 import { ProductsAdminTable } from "@/components/admin/products-admin-table";
 import { prisma } from "@/lib/db";
 import { isNamiraSchemaReady, safeDbQuery } from "@/lib/admin-db";
@@ -84,24 +84,26 @@ export default async function AdminProdutosPage({ searchParams }: Props) {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">Produtos</h1>
         <div className="flex flex-wrap gap-2">
-          <Link
+          <NavLink
             href="/admin/produtos/importar"
+            showPendingIndicator
             className="rounded-lg border border-zinc-600 px-4 py-2 text-sm text-zinc-300 no-underline hover:border-zinc-400"
           >
             Importar CSV
-          </Link>
+          </NavLink>
           <a
             href="/api/admin/export/products"
             className="rounded-lg border border-zinc-600 px-4 py-2 text-sm text-zinc-300 no-underline hover:border-zinc-400"
           >
             Exportar CSV
           </a>
-          <Link
+          <NavLink
             href="/admin/produtos/novo"
+            showPendingIndicator
             className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-zinc-950 no-underline"
           >
             Novo produto
-          </Link>
+          </NavLink>
         </div>
       </div>
 
@@ -158,23 +160,25 @@ export default async function AdminProdutosPage({ searchParams }: Props) {
       {totalPages > 1 ? (
         <nav className="mt-6 flex flex-wrap items-center justify-center gap-2 text-sm">
           {safePage > 1 ? (
-            <Link
+            <NavLink
               href={buildPageHref(q, loja, safePage - 1)}
+              showPendingIndicator
               className="rounded-lg border border-zinc-700 px-3 py-1.5 text-zinc-300 no-underline hover:border-zinc-500"
             >
               ← Anterior
-            </Link>
+            </NavLink>
           ) : null}
           <span className="px-2 text-zinc-500">
             {safePage} / {totalPages}
           </span>
           {safePage < totalPages ? (
-            <Link
+            <NavLink
               href={buildPageHref(q, loja, safePage + 1)}
+              showPendingIndicator
               className="rounded-lg border border-zinc-700 px-3 py-1.5 text-zinc-300 no-underline hover:border-zinc-500"
             >
               Próxima →
-            </Link>
+            </NavLink>
           ) : null}
         </nav>
       ) : null}

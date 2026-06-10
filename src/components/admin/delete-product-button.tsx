@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { deleteProduct } from "@/actions/admin/products";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type Props = {
   productId: string;
@@ -49,12 +50,12 @@ export function DeleteProductButton({ productId, productTitle }: Props) {
               >
                 Cancelar
               </button>
-              <button
-                type="submit"
+              <SubmitButton
+                pendingLabel="Excluindo…"
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white cursor-pointer hover:bg-red-500"
               >
                 Sim, excluir
-              </button>
+              </SubmitButton>
             </div>
           </form>
         </div>

@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAdmin } from "@/actions/admin/auth";
+import { NavLink } from "@/components/ui/nav-link";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 const baseLinks = [
   { href: "/admin", label: "Dashboard" },
@@ -22,6 +23,11 @@ type Props = {
   metricsEnabled?: boolean;
 };
 
+function isNavActive(pathname: string, href: string) {
+  if (href === "/admin") return pathname === "/admin";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function AdminShell({ children, metricsEnabled = false }: Props) {
   const pathname = usePathname();
   const links = metricsEnabled ? [...baseLinks, metricsLink] : baseLinks;
@@ -33,37 +39,42 @@ export function AdminShell({ children, metricsEnabled = false }: Props) {
   return (
     <div className="flex min-h-screen bg-zinc-950 text-zinc-100">
       <aside className="flex w-56 shrink-0 flex-col border-r border-zinc-800 p-4">
-        <Link
+        <NavLink
           href="/"
-          className="mb-6 block text-sm font-semibold text-amber-400 no-underline"
+          showPendingIndicator
+          className="mb-6 inline-flex items-center gap-1 text-sm font-semibold text-amber-400 no-underline"
         >
-          ← NaMira Achados
-        </Link>
+          Ver loja pública ↗
+        </NavLink>
         <p className="mb-4 text-xs tracking-wider text-zinc-500 uppercase">
           Admin
         </p>
         <nav className="flex flex-1 flex-col gap-1">
-          {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className={`rounded-lg px-3 py-2 text-sm no-underline ${
-                pathname === l.href
-                  ? "bg-zinc-800 text-white"
-                  : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
-              }`}
-            >
-              {l.label}
-            </Link>
-          ))}
+          {links.map((l) => {
+            const active = isNavActive(pathname, l.href);
+            return (
+              <NavLink
+                key={l.href}
+                href={l.href}
+                showPendingIndicator
+                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm no-underline ${
+                  active
+                    ? "bg-zinc-800 text-white"
+                    : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                }`}
+              >
+                {l.label}
+              </NavLink>
+            );
+          })}
         </nav>
         <form action={logoutAdmin} className="mt-4">
-          <button
-            type="submit"
-            className="w-full rounded-lg border border-zinc-700 px-3 py-2 text-xs text-zinc-400 cursor-pointer hover:text-white"
+          <SubmitButton
+            pendingLabel="Saindo…"
+            className="w-full rounded-lg border border-zinc-700 px-3 py-2 text-xs text-zinc-400 cursor-pointer hover:text-white hover:bg-zinc-900"
           >
             Sair
-          </button>
+          </SubmitButton>
         </form>
       </aside>
       <main className="flex-1 p-8">{children}</main>

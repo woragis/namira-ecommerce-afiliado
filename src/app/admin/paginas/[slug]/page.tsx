@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { updatePage } from "@/actions/admin/pages";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { prisma } from "@/lib/db";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -30,9 +31,12 @@ export default async function EditarPaginaPage({ params }: Props) {
           <input type="checkbox" name="isPublished" defaultChecked={page.isPublished} />
           Publicada
         </label>
-        <button type="submit" className="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-zinc-950">
+        <SubmitButton
+          pendingLabel="Salvando…"
+          className="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-zinc-950 cursor-pointer"
+        >
           Salvar página
-        </button>
+        </SubmitButton>
       </form>
     </div>
   );

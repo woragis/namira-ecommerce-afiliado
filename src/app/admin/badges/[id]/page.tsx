@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { BadgeStyle } from "@prisma/client";
 import { updateBadge } from "@/actions/admin/badges";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { prisma } from "@/lib/db";
 
 const STYLE_LABELS: Record<BadgeStyle, string> = {
@@ -42,9 +43,12 @@ export default async function EditarBadgePage({ params }: Props) {
             </option>
           ))}
         </select>
-        <button type="submit" className="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-zinc-950">
+        <SubmitButton
+          pendingLabel="Salvando…"
+          className="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-zinc-950 cursor-pointer"
+        >
           Salvar
-        </button>
+        </SubmitButton>
       </form>
     </div>
   );

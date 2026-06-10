@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { BadgeStyle } from "@prisma/client";
 import { createBadge, deleteBadge } from "@/actions/admin/badges";
+import { NavLink } from "@/components/ui/nav-link";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { prisma } from "@/lib/db";
 import { isDatabaseConfigured } from "@/lib/safe-db";
 
@@ -50,12 +51,12 @@ export default async function AdminBadgesPage() {
             </option>
           ))}
         </select>
-        <button
-          type="submit"
-          className="rounded-lg bg-amber-500 py-2 text-sm font-semibold text-zinc-950 sm:col-span-2"
+        <SubmitButton
+          pendingLabel="Adicionando…"
+          className="rounded-lg bg-amber-500 py-2 text-sm font-semibold text-zinc-950 cursor-pointer sm:col-span-2"
         >
           Adicionar badge
-        </button>
+        </SubmitButton>
       </form>
 
       <table className="w-full text-left text-sm">
@@ -76,14 +77,21 @@ export default async function AdminBadgesPage() {
               <td className="p-2">{b.style}</td>
               <td className="p-2">{b._count.products}</td>
               <td className="p-2 text-right">
-                <Link href={`/admin/badges/${b.id}`} className="text-amber-400 no-underline">
+                <NavLink
+                  href={`/admin/badges/${b.id}`}
+                  showPendingIndicator
+                  className="text-amber-400 no-underline"
+                >
                   Editar
-                </Link>
+                </NavLink>
                 {b._count.products === 0 ? (
                   <form action={deleteBadge.bind(null, b.id)} className="ml-2 inline">
-                    <button type="submit" className="text-xs text-red-400 cursor-pointer">
+                    <SubmitButton
+                      pendingLabel="…"
+                      className="text-xs text-red-400 cursor-pointer"
+                    >
                       Excluir
-                    </button>
+                    </SubmitButton>
                   </form>
                 ) : null}
               </td>

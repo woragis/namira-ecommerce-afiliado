@@ -1,13 +1,14 @@
+import { ProductGridSkeleton } from "@/components/catalog/product-grid-skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default function PublicLoading() {
   return (
-    <main className="flex min-h-[40vh] items-center justify-center px-6">
-      <div className="flex flex-col items-center gap-3">
-        <div
-          className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--roxo-claro)] border-t-[var(--roxo-escuro)]"
-          aria-hidden
-        />
-        <p className="text-sm text-[var(--texto-suave)]">Carregando achados…</p>
+    <main className="px-6 py-9 md:px-10" aria-busy="true" aria-label="Carregando">
+      <div className="mb-8 space-y-3">
+        <Skeleton className="h-8 w-56" />
+        <Skeleton className="h-4 w-80 max-w-full" />
       </div>
+      <ProductGridSkeleton count={8} />
     </main>
   );
 }
