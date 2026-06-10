@@ -7,6 +7,7 @@ import { WhatsAppShareButton } from "@/components/catalog/whatsapp-share-button"
 import { hashUserAgent, recordProductView } from "@/lib/analytics";
 import { formatPrice, getProductBySlug, getProducts } from "@/lib/catalog";
 import { buildGalleryItems } from "@/lib/gallery-items";
+import { displayProductDescription, displayProductTitle } from "@/lib/product-display";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -15,12 +16,15 @@ export async function generateMetadata({ params }: Props) {
   const product = await getProductBySlug(slug);
   if (!product) return { title: "Produto não encontrado" };
 
-  const title = product.metaTitle ?? product.title;
-  const description = product.metaDescription ?? product.title;
+  const title = displayProductTitle(product.metaTitle ?? product.title);
+  const description =
+    product.metaDescription ??
+    displayProductDescription(product.description, product.title) ??
+    title;
   const galleryItems = buildGalleryItems(
     product.media,
     product.imageUrl,
-    product.imageAlt ?? product.title,
+    product.imageAlt ?? title,
   );
   const ogImage =
     galleryItems.find((item) => item.type === "IMAGE")?.url ??
@@ -63,28 +67,47 @@ export default async function ProdutoDetalhePage({ params }: Props) {
     ? Number(product.priceOriginal)
     : null;
 
+  const displayTitle = displayProductTitle(product.title);
+  const displayDescription = displayProductDescription(
+    product.description,
+    product.title,
+  );
+
   const galleryItems = buildGalleryItems(
     product.media,
     product.imageUrl,
-    product.imageAlt ?? product.title,
+    product.imageAlt ?? displayTitle,
   );
 
   return (
     <main className="px-6 py-9 md:px-10">
-      <nav className="mb-6 text-sm text-[var(--texto-suave)]">
-        <NavLink href="/" className="no-underline hover:text-[var(--roxo-escuro)]">
-          Home
-        </NavLink>
-        {" / "}
-        <NavLink href="/produtos" className="no-underline hover:text-[var(--roxo-escuro)]">
-          Produtos
-        </NavLink>
-        {" / "}
-        <span className="text-[var(--texto)]">{product.title}</span>
+      <nav
+        className="mb-6 text-sm text-[var(--texto-suave)]"
+        aria-label="Breadcrumb"
+      >
+        <ol className="flex flex-wrap items-center gap-1">
+          <li>
+            <NavLink href="/" className="no-underline hover:text-[var(--roxo-escuro)]">
+              Home
+            </NavLink>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li>
+            <NavLink href="/produtos" className="no-underline hover:text-[var(--roxo-escuro)]">
+              Produtos
+            </NavLink>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li>
+            <span className="text-[var(--texto)]" aria-current="page">
+              Produto
+            </span>
+          </li>
+        </ol>
       </nav>
 
       <div className="mb-12 grid gap-10 md:grid-cols-2">
-        <ProductGallery items={galleryItems} fallbackAlt={product.title} />
+        <ProductGallery items={galleryItems} fallbackAlt={displayTitle} />
         <div>
           <div
             className="mb-2 text-xs font-semibold tracking-wider uppercase"
@@ -92,11 +115,11 @@ export default async function ProdutoDetalhePage({ params }: Props) {
           >
             {store.name}
           </div>
-          <h1 className="font-display mb-4 text-3xl font-bold text-[var(--roxo-mais-escuro)]">
-            {product.title}
+          <h1 className="font-display mb-4 text-2xl font-bold leading-snug text-[var(--roxo-mais-escuro)] md:text-3xl">
+            {displayTitle}
           </h1>
-          {product.description ? (
-            <p className="mb-6 text-[var(--texto-suave)]">{product.description}</p>
+          {displayDescription ? (
+            <p className="mb-6 text-[var(--texto-suave)]">{displayDescription}</p>
           ) : null}
           <div className="mb-6 flex flex-wrap items-baseline gap-2">
             <span className="text-3xl font-bold text-[var(--roxo-mais-escuro)]">
@@ -117,7 +140,7 @@ export default async function ProdutoDetalhePage({ params }: Props) {
               Comprar na {store.name} →
             </a>
             <WhatsAppShareButton
-              title={product.title}
+              title={displayTitle}
               productPath={`/produtos/${product.slug}`}
               className="flex-1 sm:min-w-[200px]"
             />

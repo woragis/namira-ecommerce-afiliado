@@ -4,6 +4,7 @@ import { FavoriteButton } from "@/components/catalog/favorite-button";
 import { ProductImpressionTracker } from "@/components/catalog/product-impression-tracker";
 import { WhatsAppShareButton } from "@/components/catalog/whatsapp-share-button";
 import { formatPrice, type ProductListItem } from "@/lib/catalog";
+import { displayProductTitle } from "@/lib/product-display";
 import type { BadgeStyle } from "@prisma/client";
 
 const badgeClass: Record<BadgeStyle, string> = {
@@ -23,6 +24,7 @@ export function ProductCard({ product }: Props) {
     ? Number(product.priceOriginal)
     : null;
   const productHref = `/produtos/${product.slug}`;
+  const displayTitle = displayProductTitle(product.title, 100);
 
   return (
     <ProductImpressionTracker productId={product.id}>
@@ -31,7 +33,7 @@ export function ProductCard({ product }: Props) {
           <NavLink
             href={productHref}
             className="absolute inset-0 z-[1] block no-underline text-inherit"
-            aria-label={product.title}
+            aria-label={displayTitle}
           >
             {product.imageUrl ? (
               <CatalogImage
@@ -73,7 +75,7 @@ export function ProductCard({ product }: Props) {
             <div className="pointer-events-auto absolute bottom-2.5 left-2.5 flex gap-1.5">
               <FavoriteButton productId={product.id} />
               <WhatsAppShareButton
-                title={product.title}
+                title={displayTitle}
                 productPath={productHref}
                 variant="compact"
               />
@@ -89,7 +91,7 @@ export function ProductCard({ product }: Props) {
               {store.name}
             </div>
             <h3 className="mb-2 line-clamp-2 text-sm font-medium leading-snug">
-              {product.title}
+              {displayTitle}
             </h3>
             <div className="mb-3 flex flex-wrap items-baseline gap-1.5">
               <span className="text-lg font-bold text-[var(--roxo-mais-escuro)]">
