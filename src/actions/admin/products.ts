@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { revalidateCatalog } from "@/lib/revalidate-catalog";
 import { safeDbQuery } from "@/lib/safe-db";
 import { ensureShareCode, generateUniqueShareCode } from "@/lib/share-code";
 import { slugify } from "@/lib/slugify";
@@ -35,9 +36,7 @@ function parseIds(formData: FormData, key: string): string[] {
 }
 
 function revalidateProductCatalog(slug: string) {
-  revalidatePath("/");
-  revalidatePath("/produtos");
-  revalidatePath(`/produtos/${slug}`);
+  revalidateCatalog([`/produtos/${slug}`]);
 }
 
 async function syncProductRelations(productId: string, categoryIds: string[]) {
@@ -214,8 +213,7 @@ export async function batchDeleteProducts(formData: FormData) {
   const ids = requireProductIds(formData);
   await prisma.product.deleteMany({ where: { id: { in: ids } } });
   await refreshStoreCounts();
-  revalidatePath("/");
-  revalidatePath("/produtos");
+  revalidateCatalog();
   revalidatePath("/admin/produtos");
 }
 
@@ -245,7 +243,7 @@ export async function batchSetFeatured(formData: FormData) {
     where: { id: { in: ids } },
     data: { isFeatured: formData.get("featured") === "true" },
   });
-  revalidatePath("/");
+  revalidateCatalog();
   revalidatePath("/admin/produtos");
 }
 
@@ -272,8 +270,7 @@ export async function batchUpdateStore(formData: FormData) {
 export async function deleteProduct(id: string) {
   await prisma.product.delete({ where: { id } });
   await refreshStoreCounts();
-  revalidatePath("/");
-  revalidatePath("/produtos");
+  revalidateCatalog();
   revalidatePath("/admin/produtos");
   redirect("/admin/produtos");
 }
@@ -296,6 +293,6 @@ export async function toggleProductFeatured(id: string, featured: boolean) {
     where: { id },
     data: { isFeatured: featured },
   });
-  revalidatePath("/");
+  revalidateCatalog();
   revalidatePath("/admin/produtos");
 }

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { parseCsv, rowsToObjects } from "@/lib/csv";
+import { revalidateCatalog } from "@/lib/revalidate-catalog";
 import { slugify } from "@/lib/slugify";
 import { ensureShareCode, generateUniqueShareCode } from "@/lib/share-code";
 
@@ -192,9 +193,8 @@ export async function importProductsFromCsv(
 
   await refreshStoreCounts();
 
-  revalidatePath("/produtos");
+  revalidateCatalog();
   revalidatePath("/admin/produtos");
-  revalidatePath("/");
 
   return result;
 }

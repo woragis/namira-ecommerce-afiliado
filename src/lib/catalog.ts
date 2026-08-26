@@ -1,5 +1,6 @@
 import { cache } from "react";
 import type { Prisma } from "@prisma/client";
+import { cacheCatalog } from "@/lib/catalog-cache";
 import { prisma } from "@/lib/db";
 import { safeDbQuery } from "@/lib/safe-db";
 import { sortNavTags } from "@/lib/tags";
@@ -48,7 +49,7 @@ const defaultSettings: Record<string, string> = {
   whatsapp_phone: "",
 };
 
-export const getSiteSettings = cache(async function getSiteSettings(): Promise<
+const fetchSiteSettings = cacheCatalog(async function fetchSiteSettings(): Promise<
   Record<string, string>
 > {
   return safeDbQuery(async () => {
@@ -58,7 +59,9 @@ export const getSiteSettings = cache(async function getSiteSettings(): Promise<
       ...Object.fromEntries(rows.map((r) => [r.key, r.value])),
     };
   }, defaultSettings);
-});
+}, ["site-settings"], 120);
+
+export const getSiteSettings = cache(fetchSiteSettings);
 
 export const getSiteSetting = cache(async function getSiteSetting(
   key: string,
@@ -70,18 +73,24 @@ export const getSiteSetting = cache(async function getSiteSetting(
   }, fallback);
 });
 
-export const getActiveStores = cache(async function getActiveStores() {
-  return safeDbQuery(
-    () =>
-      prisma.store.findMany({
-        where: { isActive: true },
-        orderBy: { sortOrder: "asc" },
-      }),
-    [],
-  );
-});
+const fetchActiveStores = cacheCatalog(
+  async function fetchActiveStores() {
+    return safeDbQuery(
+      () =>
+        prisma.store.findMany({
+          where: { isActive: true },
+          orderBy: { sortOrder: "asc" },
+        }),
+      [],
+    );
+  },
+  ["active-stores"],
+  120,
+);
 
-export const getNavTags = cache(async function getNavTags() {
+export const getActiveStores = cache(fetchActiveStores);
+
+const fetchNavTags = cacheCatalog(async function fetchNavTags() {
   return safeDbQuery(async () => {
     const tags = await prisma.category.findMany({
       where: { isActive: true, showInNav: true },
@@ -89,25 +98,35 @@ export const getNavTags = cache(async function getNavTags() {
     });
     return sortNavTags(tags);
   }, []);
-});
+}, ["nav-tags"], 120);
 
-export async function getHomeCollections() {
-  return safeDbQuery(
-    () =>
-      prisma.collection.findMany({
-        where: { isActive: true, showOnHome: true },
-        orderBy: { homeSortOrder: "asc" },
-        include: {
-          products: {
-            orderBy: { sortOrder: "asc" },
-            include: {
-              product: { include: productListInclude },
+export const getNavTags = cache(fetchNavTags);
+
+const fetchHomeCollections = cacheCatalog(
+  async function fetchHomeCollections() {
+    return safeDbQuery(
+      () =>
+        prisma.collection.findMany({
+          where: { isActive: true, showOnHome: true },
+          orderBy: { homeSortOrder: "asc" },
+          include: {
+            products: {
+              orderBy: { sortOrder: "asc" },
+              include: {
+                product: { include: productListInclude },
+              },
             },
           },
-        },
-      }),
-    [],
-  );
+        }),
+      [],
+    );
+  },
+  ["home-collections"],
+  60,
+);
+
+export async function getHomeCollections() {
+  return fetchHomeCollections();
 }
 
 export function buildProductWhere(filters: CatalogFilters): Prisma.ProductWhereInput {
@@ -179,7 +198,9 @@ const emptyCatalog = {
   totalPages: 0,
 };
 
-export async function getProducts(filters: CatalogFilters = {}) {
+const fetchProducts = cacheCatalog(async function fetchProducts(
+  filters: CatalogFilters = {},
+) {
   return safeDbQuery(async () => {
     const page = Math.max(1, filters.page ?? 1);
     const limit = Math.min(48, Math.max(1, filters.limit ?? 24));
@@ -199,70 +220,92 @@ export async function getProducts(filters: CatalogFilters = {}) {
 
     return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
   }, emptyCatalog);
+}, ["catalog-products"], 60);
+
+export async function getProducts(filters: CatalogFilters = {}) {
+  return fetchProducts(filters);
 }
+
+const fetchFeaturedProducts = cacheCatalog(
+  async function fetchFeaturedProducts(limit: number = 8) {
+    return safeDbQuery(
+      () =>
+        prisma.product.findMany({
+          where: { isPublished: true, isFeatured: true },
+          include: productListInclude,
+          orderBy: [{ sortPriority: "desc" }, { publishedAt: "desc" }],
+          take: limit,
+        }),
+      [],
+    );
+  },
+  ["featured-products"],
+  60,
+);
 
 export async function getFeaturedProducts(limit = 8) {
-  return safeDbQuery(
-    () =>
-      prisma.product.findMany({
-        where: { isPublished: true, isFeatured: true },
-        include: productListInclude,
-        orderBy: [{ sortPriority: "desc" }, { publishedAt: "desc" }],
-        take: limit,
-      }),
-    [],
-  );
+  return fetchFeaturedProducts(limit);
 }
 
-async function fetchProductBySlug(slug: string): Promise<ProductWithRelations | null> {
-  const base = await safeDbQuery(
-    () =>
-      prisma.product.findFirst({
-        where: { slug, isPublished: true },
-        include: productListInclude,
-      }),
-    null,
-  );
-  if (!base) return null;
-
-  const media = await safeDbQuery(
-    () =>
-      prisma.productMedia.findMany({
-        where: { productId: base.id },
-        orderBy: { sortOrder: "asc" },
-      }),
-    [],
-  );
-
-  return { ...base, media };
-}
+const fetchProductBySlug = cacheCatalog(
+  async function fetchProductBySlug(
+    slug: string,
+  ): Promise<ProductWithRelations | null> {
+    return safeDbQuery(
+      () =>
+        prisma.product.findFirst({
+          where: { slug, isPublished: true },
+          include: productInclude,
+        }),
+      null,
+    );
+  },
+  ["product-by-slug"],
+  60,
+);
 
 export const getProductBySlug = cache(fetchProductBySlug);
 
+const fetchStoreBySlug = cacheCatalog(
+  async function fetchStoreBySlug(slug: string) {
+    return safeDbQuery(
+      () =>
+        prisma.store.findFirst({
+          where: { slug, isActive: true },
+        }),
+      null,
+    );
+  },
+  ["store-by-slug"],
+  120,
+);
+
 export async function getStoreBySlug(slug: string) {
-  return safeDbQuery(
-    () =>
-      prisma.store.findFirst({
-        where: { slug, isActive: true },
-      }),
-    null,
-  );
+  return fetchStoreBySlug(slug);
 }
 
-export async function getCollectionBySlug(slug: string) {
-  return safeDbQuery(
-    () =>
-      prisma.collection.findFirst({
-        where: { slug, isActive: true },
-        include: {
-          products: {
-            orderBy: { sortOrder: "asc" },
-            include: { product: { include: productInclude } },
+const fetchCollectionBySlug = cacheCatalog(
+  async function fetchCollectionBySlug(slug: string) {
+    return safeDbQuery(
+      () =>
+        prisma.collection.findFirst({
+          where: { slug, isActive: true },
+          include: {
+            products: {
+              orderBy: { sortOrder: "asc" },
+              include: { product: { include: productInclude } },
+            },
           },
-        },
-      }),
-    null,
-  );
+        }),
+      null,
+    );
+  },
+  ["collection-by-slug"],
+  60,
+);
+
+export async function getCollectionBySlug(slug: string) {
+  return fetchCollectionBySlug(slug);
 }
 
 export async function getCategoryBySlug(slug: string) {

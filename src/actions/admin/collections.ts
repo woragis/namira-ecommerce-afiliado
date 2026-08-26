@@ -4,6 +4,7 @@ import { CollectionType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { revalidateCatalog } from "@/lib/revalidate-catalog";
 import { slugify } from "@/lib/slugify";
 
 export async function createCollection(formData: FormData) {
@@ -56,7 +57,7 @@ export async function updateCollection(id: string, formData: FormData) {
     },
   });
 
-  revalidatePath("/");
+  revalidateCatalog();
   revalidatePath(`/admin/colecoes/${id}`);
 }
 
@@ -79,7 +80,7 @@ export async function addProductToCollection(
   });
 
   revalidatePath(`/admin/colecoes/${collectionId}`);
-  revalidatePath("/");
+  revalidateCatalog();
 }
 
 export async function removeProductFromCollection(
@@ -92,6 +93,7 @@ export async function removeProductFromCollection(
     },
   });
   revalidatePath(`/admin/colecoes/${collectionId}`);
+  revalidateCatalog();
 }
 
 export async function moveCollectionProduct(
@@ -135,7 +137,7 @@ export async function moveCollectionProduct(
   ]);
 
   revalidatePath(`/admin/colecoes/${collectionId}`);
-  revalidatePath("/");
+  revalidateCatalog();
 }
 
 export async function deactivateCollection(id: string) {
@@ -143,5 +145,6 @@ export async function deactivateCollection(id: string) {
     where: { id },
     data: { isActive: false },
   });
+  revalidateCatalog();
   revalidatePath("/admin/colecoes");
 }

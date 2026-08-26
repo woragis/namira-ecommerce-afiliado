@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { revalidateCatalog } from "@/lib/revalidate-catalog";
 import { slugify } from "@/lib/slugify";
 
 const storeSchema = z.object({
@@ -58,8 +59,7 @@ export async function createStore(formData: FormData) {
     },
   });
 
-  revalidatePath("/");
-  revalidatePath("/lojas");
+  revalidateCatalog();
   revalidatePath("/admin/lojas");
   redirect("/admin/lojas");
 }
@@ -100,7 +100,7 @@ export async function updateStore(id: string, formData: FormData) {
     },
   });
 
-  revalidatePath("/");
+  revalidateCatalog();
   revalidatePath("/admin/lojas");
   redirect("/admin/lojas");
 }
@@ -110,5 +110,6 @@ export async function deleteStore(id: string) {
     where: { id },
     data: { isActive: false },
   });
+  revalidateCatalog();
   revalidatePath("/admin/lojas");
 }

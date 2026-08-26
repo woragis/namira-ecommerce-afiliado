@@ -7,7 +7,7 @@ type Props = ComponentProps<typeof Link> & {
 };
 
 export function NavLink({
-  prefetch = true,
+  prefetch = "auto",
   showPendingIndicator = true,
   children,
   className = "",

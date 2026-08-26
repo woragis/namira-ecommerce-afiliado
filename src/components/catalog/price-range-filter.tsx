@@ -1,3 +1,9 @@
+"use client";
+
+import { FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { NavLink } from "@/components/ui/nav-link";
+
 type Props = {
   action: string;
   priceMin?: number;
@@ -13,7 +19,21 @@ export function PriceRangeFilter({
   hiddenParams = {},
   clearHref,
 }: Props) {
+  const router = useRouter();
   const hasPrice = priceMin != null || priceMax != null;
+
+  function onSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    const fd = new FormData(e.currentTarget);
+    for (const [key, value] of fd.entries()) {
+      if (typeof value === "string" && value.trim()) {
+        params.set(key, value.trim());
+      }
+    }
+    const q = params.toString();
+    router.push(q ? `${action}?${q}` : action);
+  }
 
   return (
     <details
@@ -31,6 +51,7 @@ export function PriceRangeFilter({
       <form
         action={action}
         method="get"
+        onSubmit={onSubmit}
         className="flex flex-wrap items-end gap-3 border-t border-[var(--borda)] px-4 py-3"
       >
         {Object.entries(hiddenParams).map(([key, value]) =>
@@ -69,12 +90,12 @@ export function PriceRangeFilter({
           Aplicar
         </button>
         {hasPrice ? (
-          <a
+          <NavLink
             href={clearHref}
             className="py-2 text-sm text-[var(--texto-suave)] no-underline hover:text-[var(--roxo-escuro)]"
           >
             Limpar preço
-          </a>
+          </NavLink>
         ) : null}
       </form>
     </details>

@@ -1,20 +1,21 @@
 import { CopyShareLinkButton } from "@/components/copy-share-link-button";
 import { NavLink } from "@/components/ui/nav-link";
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ProductGallery } from "@/components/catalog/product-gallery";
 import { ProductGrid } from "@/components/catalog/product-grid";
+import { ProductViewTracker } from "@/components/catalog/product-view-tracker";
 import { WhatsAppShareButton } from "@/components/catalog/whatsapp-share-button";
-import { hashUserAgent, recordProductView } from "@/lib/analytics";
 import { formatPrice, getProductBySlug, getProducts } from "@/lib/catalog";
 import { buildGalleryItems } from "@/lib/gallery-items";
 import { displayProductDescription, displayProductTitle } from "@/lib/product-display";
 import {
   buildProductShareUrl,
-  ensureShareCode,
   resolveAffiliatePath,
   resolveProductSharePath,
 } from "@/lib/share-code";
+import { getSiteBaseUrl } from "@/lib/whatsapp";
+
+export const revalidate = 60;
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -55,24 +56,19 @@ export default async function ProdutoDetalhePage({ params }: Props) {
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const shareCode = await ensureShareCode(product.id, product.shareCode);
-  const sharePath = resolveProductSharePath({ shareCode, slug: product.slug });
-  const shareUrl = buildProductShareUrl(shareCode);
-  const affiliatePath = resolveAffiliatePath({ shareCode, id: product.id });
+  const sharePath = resolveProductSharePath(product);
+  const shareUrl = product.shareCode
+    ? buildProductShareUrl(product.shareCode)
+    : `${getSiteBaseUrl()}/produtos/${product.slug}`;
+  const affiliatePath = resolveAffiliatePath(product);
 
-  const hdrs = await headers();
-  const ua = hdrs.get("user-agent") ?? "";
-  void recordProductView(
-    product.id,
-    `/produtos/${slug}`,
-    hashUserAgent(ua),
-  );
-
-  const store = product.store;
-  const related = await getProducts({
-    storeSlug: store.slug,
+  const relatedPromise = getProducts({
+    storeSlug: product.store.slug,
     limit: 4,
   });
+
+  const store = product.store;
+  const related = await relatedPromise;
 
   const priceCurrent = Number(product.priceCurrent);
   const priceOriginal = product.priceOriginal
@@ -93,6 +89,7 @@ export default async function ProdutoDetalhePage({ params }: Props) {
 
   return (
     <main className="px-6 py-9 pb-24 md:px-10 md:pb-9">
+      <ProductViewTracker productId={product.id} />
       <nav
         className="mb-6 text-sm text-[var(--texto-suave)]"
         aria-label="Breadcrumb"

@@ -4,6 +4,7 @@ import { BadgeStyle, CategoryKind } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { revalidateCatalog } from "@/lib/revalidate-catalog";
 import { slugify } from "@/lib/slugify";
 
 const KINDS: CategoryKind[] = [CategoryKind.DEPARTMENT, CategoryKind.PROMO];
@@ -38,8 +39,7 @@ export async function createCategory(formData: FormData) {
     data: { name, slug, icon, sortOrder, showInNav, kind, style },
   });
 
-  revalidatePath("/");
-  revalidatePath("/produtos");
+  revalidateCatalog();
   revalidatePath("/admin/categorias");
   redirect("/admin/categorias");
 }
@@ -59,8 +59,7 @@ export async function updateCategory(id: string, formData: FormData) {
     data: { name, slug, icon, sortOrder, showInNav, isActive, kind, style },
   });
 
-  revalidatePath("/");
-  revalidatePath("/produtos");
+  revalidateCatalog();
   revalidatePath("/admin/categorias");
   redirect("/admin/categorias");
 }
@@ -70,7 +69,6 @@ export async function deactivateCategory(id: string) {
     where: { id },
     data: { isActive: false },
   });
-  revalidatePath("/");
-  revalidatePath("/produtos");
+  revalidateCatalog();
   revalidatePath("/admin/categorias");
 }

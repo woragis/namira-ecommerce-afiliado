@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { revalidateCatalog } from "@/lib/revalidate-catalog";
 
 const KEYS = [
   "header_banner_text",
@@ -28,6 +29,6 @@ export async function updateSiteSettings(formData: FormData) {
     }
   }
 
-  revalidatePath("/");
+  revalidateCatalog();
   revalidatePath("/admin/configuracoes");
 }
