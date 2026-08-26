@@ -22,10 +22,12 @@ export default async function PublicLayout({
 
   return (
     <>
-      <Header bannerText={settings.header_banner_text} />
-      <Suspense fallback={<nav className="h-12 border-b bg-white" />}>
-        <StoreFilterNav stores={stores} tags={tags} />
-      </Suspense>
+      <div className="sticky top-0 z-50">
+        <Header bannerText={settings.header_banner_text} />
+        <Suspense fallback={<nav className="h-12 border-b bg-white" />}>
+          <StoreFilterNav stores={stores} tags={tags} />
+        </Suspense>
+      </div>
       <div className="flex-1">{children}</div>
       <Footer
         stores={stores}

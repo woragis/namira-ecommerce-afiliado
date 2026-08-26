@@ -49,6 +49,14 @@ export function StoreFilterNav({ stores, tags }: Props) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const search = searchParams.get("q");
+  const priceMinRaw = searchParams.get("preco_min");
+  const priceMaxRaw = searchParams.get("preco_max");
+  const priceMin = priceMinRaw ? parseFloat(priceMinRaw.replace(",", ".")) : undefined;
+  const priceMax = priceMaxRaw ? parseFloat(priceMaxRaw.replace(",", ".")) : undefined;
+  const priceMinValue =
+    priceMin != null && !Number.isNaN(priceMin) ? priceMin : undefined;
+  const priceMaxValue =
+    priceMax != null && !Number.isNaN(priceMax) ? priceMax : undefined;
   const activeStore =
     searchParams.get("loja") ??
     (pathname.startsWith("/lojas/")
@@ -67,7 +75,7 @@ export function StoreFilterNav({ stores, tags }: Props) {
       <div className="overflow-x-auto px-6 md:px-10 [&::-webkit-scrollbar]:hidden">
         <div className="flex min-w-max items-center">
           <NavLink
-            href={catalogHref({ storeSlug: null, tagSlug: activeTag, search })}
+            href={catalogHref({ storeSlug: null, tagSlug: activeTag, search, priceMin: priceMinValue, priceMax: priceMaxValue })}
             className="flex items-center gap-2 border-b-2 px-5 py-3.5 text-[13px] font-medium whitespace-nowrap no-underline transition-colors"
             style={{
               borderBottomColor: !activeStore ? "var(--roxo-escuro)" : "transparent",
@@ -92,6 +100,8 @@ export function StoreFilterNav({ stores, tags }: Props) {
                 storeSlug: store.slug,
                 tagSlug: activeTag,
                 search,
+                priceMin: priceMinValue,
+                priceMax: priceMaxValue,
               })}
               aria-label={store.name}
               className="flex items-center gap-2 border-b-2 px-5 py-3.5 text-[13px] font-medium whitespace-nowrap no-underline transition-colors"
@@ -115,7 +125,7 @@ export function StoreFilterNav({ stores, tags }: Props) {
         <div className="overflow-x-auto border-t border-[var(--borda)] px-6 md:px-10 [&::-webkit-scrollbar]:hidden">
           <div className="flex min-w-max items-center gap-1 py-2">
             <NavLink
-              href={catalogHref({ storeSlug: activeStore, tagSlug: null, search })}
+              href={catalogHref({ storeSlug: activeStore, tagSlug: null, search, priceMin: priceMinValue, priceMax: priceMaxValue })}
               className={`rounded-full px-3 py-1.5 text-xs font-medium whitespace-nowrap no-underline ${
                 !activeTag
                   ? "bg-[var(--roxo-escuro)] text-white"
@@ -126,6 +136,12 @@ export function StoreFilterNav({ stores, tags }: Props) {
             </NavLink>
             {tags.map((tag) => {
               const active = activeTag === tag.slug;
+              const isPromo = tag.kind === "PROMO";
+              const className = active
+                ? "rounded-full px-3 py-1.5 text-xs font-medium whitespace-nowrap no-underline bg-[var(--roxo-escuro)] text-white"
+                : isPromo
+                  ? "rounded-full px-3 py-1.5 text-xs whitespace-nowrap no-underline border border-[var(--borda)] bg-[var(--roxo-claro)] text-[var(--roxo-escuro)] hover:border-[var(--roxo)]"
+                  : "rounded-full px-3 py-1.5 text-xs whitespace-nowrap no-underline border border-transparent text-[var(--texto-suave)] hover:text-[var(--roxo-escuro)]";
               return (
                 <NavLink
                   key={tag.id}
@@ -133,12 +149,10 @@ export function StoreFilterNav({ stores, tags }: Props) {
                     storeSlug: activeStore,
                     tagSlug: tag.slug,
                     search,
+                    priceMin: priceMinValue,
+                    priceMax: priceMaxValue,
                   })}
-                  className={`rounded-full px-3 py-1.5 text-xs whitespace-nowrap no-underline ${
-                    active
-                      ? "bg-[var(--roxo-escuro)] text-white font-medium"
-                      : "text-[var(--texto-suave)] hover:text-[var(--roxo-escuro)]"
-                  }`}
+                  className={className}
                 >
                   {tag.icon ? `${tag.icon} ` : ""}
                   {tag.name}

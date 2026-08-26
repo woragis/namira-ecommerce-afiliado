@@ -20,7 +20,7 @@ export default function PublicError({
         Algo deu errado
       </h1>
       <p className="mb-6 max-w-md text-sm text-[var(--texto-suave)]">
-        Não foi possível carregar esta página. Verifique a conexão com o banco ou tente de novo.
+        Não foi possível carregar esta página. Tente novamente.
       </p>
       <div className="flex gap-3">
         <button

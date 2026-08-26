@@ -34,7 +34,7 @@ export function FavoritosClient() {
   if (products.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed border-[var(--borda)] bg-white px-6 py-12 text-center text-[var(--texto-suave)]">
-        Nenhum favorito ainda. Clique no coração nos produtos (em breve) ou navegue pelo catálogo.
+        Nenhum favorito ainda. Toque no coração nos cards para guardar achados aqui.
       </p>
     );
   }

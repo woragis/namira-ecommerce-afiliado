@@ -5,7 +5,7 @@ import { PriceRangeFilter } from "@/components/catalog/price-range-filter";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { getProducts, getStoreBySlug } from "@/lib/catalog";
 import { filtersToSearchParams } from "@/lib/catalog-params";
-import { parseCatalogSearchParams } from "@/lib/filters";
+import { parseCatalogSearchParams, catalogQueryString } from "@/lib/filters";
 
 export const revalidate = 60;
 
@@ -27,6 +27,10 @@ export default async function LojaPage({ params, searchParams }: Props) {
   });
 
   const extra = { ...filtersToSearchParams(filters), loja: slug };
+  const extraWithPrice = {
+    ...filtersToSearchParams(filters, ["page"]),
+    loja: slug,
+  };
 
   return (
     <main className="px-6 py-9 md:px-10">
@@ -36,13 +40,18 @@ export default async function LojaPage({ params, searchParams }: Props) {
         total={total}
         basePath={`/lojas/${slug}`}
         currentSort={filters.sort}
-        extraParams={extra}
+        extraParams={extraWithPrice}
       />
       <PriceRangeFilter
         action={`/lojas/${slug}`}
         priceMin={filters.priceMin}
         priceMax={filters.priceMax}
         hiddenParams={extra}
+        clearHref={`/lojas/${slug}${catalogQueryString({
+          tag: filters.tagSlug,
+          q: filters.search,
+          ordenar: filters.sort && filters.sort !== "recentes" ? filters.sort : undefined,
+        })}`}
       />
       <ProductGrid
         products={items}
@@ -56,11 +65,7 @@ export default async function LojaPage({ params, searchParams }: Props) {
         page={page}
         totalPages={totalPages}
         basePath={`/lojas/${slug}`}
-        extraParams={{
-          ...extra,
-          ...(filters.priceMin != null ? { preco_min: String(filters.priceMin) } : {}),
-          ...(filters.priceMax != null ? { preco_max: String(filters.priceMax) } : {}),
-        }}
+        extraParams={extraWithPrice}
       />
     </main>
   );

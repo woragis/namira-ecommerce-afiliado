@@ -12,6 +12,9 @@ test.describe("Catálogo público", () => {
     await expect(
       page.getByText(/Purificador de ar|Mini projetor|Organizador de maquiagem/i).first(),
     ).toBeVisible();
+    await expect(
+      page.locator("section a[href='/produtos?loja=shopee']").first(),
+    ).toBeVisible();
   });
 
   test("listagem /produtos exibe produtos publicados", async ({ page }) => {
@@ -27,7 +30,40 @@ test.describe("Catálogo público", () => {
     await page.goto("/produtos?loja=shopee");
 
     await expect(page).toHaveURL(/loja=shopee/);
+    await expect(page.getByRole("heading", { name: /^Shopee$/ })).toBeVisible();
     await expect(page.locator("article").first()).toBeVisible();
+  });
+
+  test("chips de loja e tag são independentes", async ({ page }) => {
+    await page.goto("/produtos?loja=shopee&tag=casa");
+
+    await expect(page.getByRole("heading", { name: /Shopee · Casa/ })).toBeVisible();
+    await page.getByRole("link", { name: /Remover filtro Shopee/ }).click();
+    await expect(page).not.toHaveURL(/loja=/);
+    await expect(page).toHaveURL(/tag=casa/);
+    await expect(page.getByRole("heading", { name: /^Casa$/ })).toBeVisible();
+  });
+
+  test("limpar preço preserva loja e tag", async ({ page }) => {
+    await page.goto("/produtos?loja=shopee&tag=casa&preco_min=10&preco_max=200");
+    await page.getByRole("link", { name: "Limpar preço" }).click();
+    await expect(page).toHaveURL(/loja=shopee/);
+    await expect(page).toHaveURL(/tag=casa/);
+    await expect(page).not.toHaveURL(/preco_/);
+  });
+
+  test("mobile mostra favoritos, esconde Ver lojas e gruda CTA no PDP", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/produtos");
+
+    await expect(page.getByRole("link", { name: "Favoritos" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Ver lojas" })).toBeHidden();
+
+    await page.locator('a[href^="/produtos/"]').first().click();
+    await expect(page).toHaveURL(/\/produtos\/[^/?]+/);
+    await expect(page.locator("div.fixed.bottom-0 a", { hasText: /Comprar na/ })).toBeVisible();
   });
 
   test("tabs de loja e tag mostram produtos", async ({ page }) => {

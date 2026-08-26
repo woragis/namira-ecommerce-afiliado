@@ -7,7 +7,7 @@ type Props = {
 export function ProductGridSkeleton({ count = 8 }: Props) {
   return (
     <div
-      className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-5"
+      className="grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] sm:gap-5"
       aria-busy="true"
       aria-label="Carregando produtos"
     >

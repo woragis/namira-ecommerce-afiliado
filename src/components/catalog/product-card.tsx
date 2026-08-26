@@ -47,11 +47,6 @@ export function ProductCard({ product }: Props) {
           </NavLink>
           <div className="pointer-events-none absolute inset-0 z-[2]">
             <div className="absolute top-2.5 left-2.5 flex flex-col gap-1">
-              {product.isFeatured ? (
-                <span className="inline-flex items-center rounded-md bg-[var(--dourado)] px-2 py-0.5 text-[10px] font-bold text-[var(--dourado-escuro)]">
-                  ⭐ Destaque
-                </span>
-              ) : null}
               {productPromoTags(product).map((tag) => (
                 <span
                   key={tag.id}
@@ -64,15 +59,11 @@ export function ProductCard({ product }: Props) {
                 </span>
               ))}
             </div>
-            <span
-              className="absolute top-2.5 right-2.5 flex h-[26px] w-[26px] items-center justify-center rounded-lg text-[9px] font-extrabold shadow-md"
-              style={{
-                backgroundColor: store.colorPrimary,
-                color: store.colorOnPrimary,
-              }}
-            >
-              {store.shortLabel}
-            </span>
+            {product.isFeatured ? (
+              <span className="absolute top-2.5 right-2.5 inline-flex items-center rounded-md bg-[var(--dourado)] px-2 py-0.5 text-[10px] font-bold text-[var(--dourado-escuro)] shadow-sm">
+                ⭐ Destaque
+              </span>
+            ) : null}
             <div className="pointer-events-auto absolute bottom-2.5 left-2.5 flex gap-1.5">
               <FavoriteButton productId={product.id} />
               <WhatsAppShareButton

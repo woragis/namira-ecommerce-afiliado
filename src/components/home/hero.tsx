@@ -46,7 +46,7 @@ export function Hero({ eyebrow, title, subtitle, stats, stores }: Props) {
         {stores.map((store) => (
           <NavLink
             key={store.id}
-            href={`/lojas/${store.slug}`}
+            href={`/produtos?loja=${store.slug}`}
             className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-4 py-3 no-underline transition hover:translate-x-1 hover:bg-white/10"
           >
             <span

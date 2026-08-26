@@ -19,22 +19,32 @@ export function SearchForm({ defaultQuery = "" }: { defaultQuery?: string }) {
       searchParams.get("tag") ??
       searchParams.get("categoria") ??
       searchParams.get("badge");
+    const precoMinRaw = searchParams.get("preco_min");
+    const precoMaxRaw = searchParams.get("preco_max");
+    const priceMin = precoMinRaw
+      ? parseFloat(precoMinRaw.replace(",", "."))
+      : undefined;
+    const priceMax = precoMaxRaw
+      ? parseFloat(precoMaxRaw.replace(",", "."))
+      : undefined;
     router.push(
       catalogHref({
         storeSlug: loja,
         tagSlug: tag,
         search: trimmed || null,
+        priceMin: priceMin != null && !Number.isNaN(priceMin) ? priceMin : null,
+        priceMax: priceMax != null && !Number.isNaN(priceMax) ? priceMax : null,
       }),
     );
   }
 
   return (
-    <form onSubmit={onSubmit} className="relative max-w-[480px] flex-1">
+    <form onSubmit={onSubmit} className="relative min-w-0 max-w-[480px] flex-1">
       <input
         type="search"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Buscar produtos, lojas ou tags..."
+        placeholder="Buscar achados..."
         className="h-10 w-full rounded-full border-[1.5px] border-[var(--borda)] bg-[var(--roxo-claro)] pr-11 pl-4 text-sm text-[var(--texto)] outline-none focus:border-[var(--roxo)]"
       />
       <button

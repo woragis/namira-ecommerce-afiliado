@@ -61,7 +61,7 @@ export function ProductGrid({
   }
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-5">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] sm:gap-5">
       {products.map((p) => (
         <ProductCard key={p.id} product={p} />
       ))}

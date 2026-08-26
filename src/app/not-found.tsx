@@ -9,12 +9,20 @@ export default function NotFound() {
       <p className="mb-6 text-[var(--texto-suave)]">
         Este achado não existe ou foi removido.
       </p>
-      <Link
-        href="/produtos"
-        className="rounded-full bg-[var(--roxo-escuro)] px-6 py-2.5 text-sm font-semibold text-white no-underline"
-      >
-        Ver catálogo
-      </Link>
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        <Link
+          href="/"
+          className="rounded-full border border-[var(--borda)] bg-white px-6 py-2.5 text-sm font-medium text-[var(--roxo-escuro)] no-underline"
+        >
+          Ir para home
+        </Link>
+        <Link
+          href="/produtos"
+          className="rounded-full bg-[var(--roxo-escuro)] px-6 py-2.5 text-sm font-semibold text-white no-underline"
+        >
+          Ver catálogo
+        </Link>
+      </div>
     </main>
   );
 }

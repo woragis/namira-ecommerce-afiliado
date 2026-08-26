@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   catalogHref,
   catalogQueryString,
+  catalogTitle,
   parseCatalogSearchParams,
+  priceChipLabel,
 } from "@/lib/filters";
 
 describe("parseCatalogSearchParams", () => {
@@ -92,5 +94,35 @@ describe("catalogHref", () => {
     expect(catalogHref({ storeSlug: null, tagSlug: null, search: null })).toBe(
       "/produtos",
     );
+  });
+});
+
+describe("catalogTitle", () => {
+  it("defaults to Todos os achados", () => {
+    expect(catalogTitle({})).toBe("Todos os achados");
+  });
+
+  it("joins store and tag names", () => {
+    expect(catalogTitle({ storeName: "Shopee", tagName: "Casa" })).toBe(
+      "Shopee · Casa",
+    );
+  });
+
+  it("prefers search over store/tag", () => {
+    expect(
+      catalogTitle({
+        search: "projetor",
+        storeName: "Shopee",
+        tagName: "Tech",
+      }),
+    ).toBe("Resultados para “projetor”");
+  });
+});
+
+describe("priceChipLabel", () => {
+  it("formats min, max and range", () => {
+    expect(priceChipLabel(10, undefined)).toBe("A partir de R$ 10");
+    expect(priceChipLabel(undefined, 99)).toBe("Até R$ 99");
+    expect(priceChipLabel(10, 50)).toBe("R$ 10–50");
   });
 });

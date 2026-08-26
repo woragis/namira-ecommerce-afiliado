@@ -66,3 +66,26 @@ export function catalogHref(parts: {
       parts.priceMax != null ? String(parts.priceMax) : undefined,
   })}`;
 }
+
+export function catalogTitle(opts: {
+  search?: string;
+  storeName?: string;
+  tagName?: string;
+}): string {
+  if (opts.search?.trim()) {
+    return `Resultados para “${opts.search.trim()}”`;
+  }
+  const parts = [opts.storeName, opts.tagName].filter(Boolean);
+  if (parts.length) return parts.join(" · ");
+  return "Todos os achados";
+}
+
+export function priceChipLabel(
+  priceMin?: number,
+  priceMax?: number,
+): string | null {
+  if (priceMin != null && priceMax != null) return `R$ ${priceMin}–${priceMax}`;
+  if (priceMin != null) return `A partir de R$ ${priceMin}`;
+  if (priceMax != null) return `Até R$ ${priceMax}`;
+  return null;
+}

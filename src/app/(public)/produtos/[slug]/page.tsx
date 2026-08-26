@@ -92,7 +92,7 @@ export default async function ProdutoDetalhePage({ params }: Props) {
   );
 
   return (
-    <main className="px-6 py-9 md:px-10">
+    <main className="px-6 py-9 pb-24 md:px-10 md:pb-9">
       <nav
         className="mb-6 text-sm text-[var(--texto-suave)]"
         aria-label="Breadcrumb"
@@ -174,6 +174,16 @@ export default async function ProdutoDetalhePage({ params }: Props) {
       <ProductGrid
         products={related.items.filter((p) => p.id !== product.id).slice(0, 4)}
       />
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--borda)] bg-white p-3 md:hidden pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <a
+          href={affiliatePath}
+          className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-semibold text-white no-underline"
+          style={{ backgroundColor: store.colorPrimary }}
+        >
+          Comprar na {store.name} →
+        </a>
+      </div>
     </main>
   );
 }

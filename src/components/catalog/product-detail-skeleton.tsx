@@ -26,7 +26,7 @@ export function ProductDetailSkeleton() {
         </div>
       </div>
       <Skeleton className="mb-4 h-7 w-48" />
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] sm:gap-5">
         {Array.from({ length: 4 }, (_, i) => (
           <Skeleton key={i} className="aspect-[4/5] w-full rounded-2xl" />
         ))}
