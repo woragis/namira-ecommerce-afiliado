@@ -14,7 +14,7 @@ export function Footer({ stores, categories, disclaimer, instagramUrl }: Props) 
     <footer className="mt-auto bg-[var(--roxo-mais-escuro)] text-white">
       <div className="grid gap-10 px-6 py-12 md:grid-cols-4 md:px-10">
         <div>
-          <Logo className="mb-2 [&_.logo-achados]:text-white/30" />
+          <Logo variant="footer" className="mb-2" />
           <p className="mt-2 max-w-xs text-sm text-white/50">
             Curadoria de produtos virais das maiores lojas do Brasil, tudo num só lugar.
           </p>

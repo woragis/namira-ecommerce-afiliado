@@ -2,6 +2,7 @@ import { loginAdmin } from "@/actions/admin/auth";
 import { NavLink } from "@/components/ui/nav-link";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { isAdminProtectionEnabled } from "@/lib/admin-auth";
+import Image from "next/image";
 
 type Props = {
   searchParams: Promise<{ error?: string; next?: string }>;
@@ -14,7 +15,14 @@ export default async function AdminLoginPage({ searchParams }: Props) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-4">
       <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900 p-8">
-        <h1 className="mb-2 text-xl font-bold text-white">Admin NaMira</h1>
+        <Image
+          src="/brand/nav.png"
+          alt=""
+          width={48}
+          height={48}
+          className="mx-auto mb-4 h-12 w-12"
+        />
+        <h1 className="mb-2 text-center text-xl font-bold text-white">Admin NaMira</h1>
         <p className="mb-6 text-sm text-zinc-400">
           {protected_
             ? "Digite a senha de administrador."

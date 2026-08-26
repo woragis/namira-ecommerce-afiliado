@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import { logoutAdmin } from "@/actions/admin/auth";
 import { NavLink } from "@/components/ui/nav-link";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -41,8 +42,15 @@ export function AdminShell({ children, metricsEnabled = false }: Props) {
         <NavLink
           href="/"
           showPendingIndicator
-          className="mb-6 inline-flex items-center gap-1 text-sm font-semibold text-amber-400 no-underline"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-amber-400 no-underline"
         >
+          <Image
+            src="/brand/footer.png"
+            alt=""
+            width={28}
+            height={28}
+            className="h-7 w-7"
+          />
           Ver loja pública ↗
         </NavLink>
         <p className="mb-4 text-xs tracking-wider text-zinc-500 uppercase">
