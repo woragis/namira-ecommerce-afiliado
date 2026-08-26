@@ -44,7 +44,14 @@ export default async function LojaPage({ params, searchParams }: Props) {
         priceMax={filters.priceMax}
         hiddenParams={extra}
       />
-      <ProductGrid products={items} />
+      <ProductGrid
+        products={items}
+        emptyFilters={{
+          storeSlug: slug,
+          tagSlug: filters.tagSlug,
+          search: filters.search,
+        }}
+      />
       <Pagination
         page={page}
         totalPages={totalPages}

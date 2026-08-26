@@ -7,12 +7,11 @@ import { legacyMediaPayload, mediaToDrafts } from "@/lib/product-media";
 import type { ProductFormInput } from "@/lib/product-form-data";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { ProductMediaManager } from "./product-media-manager";
-import type { Badge, Category, Store } from "@prisma/client";
+import type { Category, Store } from "@prisma/client";
 
 type Props = {
   stores: Store[];
   categories: Category[];
-  badges: Badge[];
   product?: ProductFormInput;
 };
 
@@ -21,7 +20,7 @@ function initialMedia(product?: ProductFormInput) {
   return legacyMediaPayload(product?.imageUrl, product?.imageStoragePath);
 }
 
-export function ProductForm({ stores, categories, badges, product }: Props) {
+export function ProductForm({ stores, categories, product }: Props) {
   const action = product ? updateProductFromForm : createProduct;
 
   const [title, setTitle] = useState(product?.title ?? "");
@@ -36,7 +35,6 @@ export function ProductForm({ stores, categories, badges, product }: Props) {
   const selectedCategories = new Set(
     product?.categories.map((c) => c.categoryId) ?? [],
   );
-  const selectedBadges = new Set(product?.badges.map((b) => b.badgeId) ?? []);
 
   return (
     <form action={action} className="max-w-lg space-y-4">
@@ -121,34 +119,30 @@ export function ProductForm({ stores, categories, badges, product }: Props) {
         initial={initialMedia(product)}
       />
 
-      <fieldset className="space-y-2">
-        <legend className="text-sm text-zinc-400">Categorias</legend>
-        {categories.map((c) => (
-          <label key={c.id} className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              name="categoryIds"
-              value={c.id}
-              defaultChecked={selectedCategories.has(c.id)}
-            />
-            {c.icon} {c.name}
-          </label>
-        ))}
-      </fieldset>
-
-      <fieldset className="space-y-2">
-        <legend className="text-sm text-zinc-400">Badges</legend>
-        {badges.map((b) => (
-          <label key={b.id} className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              name="badgeIds"
-              value={b.id}
-              defaultChecked={selectedBadges.has(b.id)}
-            />
-            {b.label}
-          </label>
-        ))}
+      <fieldset className="space-y-3">
+        <legend className="text-sm text-zinc-400">Tags</legend>
+        {(["PROMO", "DEPARTMENT"] as const).map((kind) => {
+          const group = categories.filter((c) => c.kind === kind);
+          if (group.length === 0) return null;
+          return (
+            <div key={kind} className="space-y-2">
+              <p className="text-xs tracking-wide text-zinc-500 uppercase">
+                {kind === "PROMO" ? "Promoção" : "Departamento"}
+              </p>
+              {group.map((c) => (
+                <label key={c.id} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    name="categoryIds"
+                    value={c.id}
+                    defaultChecked={selectedCategories.has(c.id)}
+                  />
+                  {c.icon} {c.name}
+                </label>
+              ))}
+            </div>
+          );
+        })}
       </fieldset>
 
       <label className="flex items-center gap-2 text-sm">

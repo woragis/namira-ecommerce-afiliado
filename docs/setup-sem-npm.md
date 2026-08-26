@@ -22,23 +22,23 @@ npm run test:e2e          # Playwright (sobe next dev automaticamente)
 npm run test:all          # tudo
 ```
 
-Pré-requisito para integração/e2e: `npm run docker:up`, `.env` com `DATABASE_URL`, `npm run db:seed`.
+Pré-requisito para integração/e2e: `npm run docker:up`, `.env` com `DATABASE_URL`, `npm run db:seed:demo`.
 
 ## Desenvolvimento local (Docker)
 
 ```bash
 cd namira
 cp .env.example .env
-# Ou use o .env já preparado para Docker (porta 5433)
+# Ou use o .env já preparado para Docker (porta 5436)
 
 docker compose up -d
 npm install
 npx prisma db push
-npm run db:seed
+npm run db:seed:demo
 npm run dev
 ```
 
-Postgres sobe em `localhost:5433` (evita conflito com Postgres instalado na máquina).
+Postgres sobe em `localhost:5436` (evita conflito com outros Postgres na máquina).
 
 ## Após conseguir `npm install`
 
@@ -50,7 +50,7 @@ cp .env.example .env
 npm install
 npx prisma generate
 npx prisma db push   # ou: npm run db:migrate
-npm run db:seed
+npm run db:seed:demo
 npm run dev
 ```
 

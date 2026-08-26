@@ -4,6 +4,8 @@ import {
   CATEGORY_DEFS,
   COLLECTION_DEFS,
   DEMO_PRODUCT_DEFS,
+  LEGACY_CATEGORY_SLUGS,
+  LEGACY_CATEGORY_TO_PROMO,
   PAGE_DEFS,
   SETTING_DEFAULTS,
   STORE_DEFS,
@@ -29,18 +31,15 @@ export async function runSeed(prisma: PrismaClient) {
   const categories = await ensureCategories(prisma, stats, upgrade);
   const categoryBySlug = Object.fromEntries(categories.map((c) => [c.slug, c]));
 
+  await hideLegacyCategories(prisma, stats);
+  await migrateLegacyAndBadgesToTags(prisma, stats, categoryBySlug);
+
   const badges = await ensureBadges(prisma, stats, upgrade);
   const badgeBySlug = Object.fromEntries(badges.map((b) => [b.slug, b]));
+  void badgeBySlug;
 
   const demoProducts = includeDemo
-    ? await ensureDemoProducts(
-        prisma,
-        stats,
-        upgrade,
-        storeBySlug,
-        categoryBySlug,
-        badgeBySlug,
-      )
+    ? await ensureDemoProducts(prisma, stats, upgrade, storeBySlug, categoryBySlug)
     : [];
 
   const productBySlug = Object.fromEntries(demoProducts.map((p) => [p.slug, p]));
@@ -100,28 +99,86 @@ async function ensureCategories(
     const existing = await prisma.category.findUnique({
       where: { slug: def.slug },
     });
+    const data = {
+      name: def.name,
+      icon: def.icon,
+      sortOrder: def.sortOrder,
+      kind: def.kind,
+      style: def.style,
+      showInNav: def.showInNav,
+      isActive: def.isActive,
+    };
     if (existing) {
       if (upgrade) {
         await prisma.category.update({
           where: { slug: def.slug },
-          data: {
-            name: def.name,
-            icon: def.icon,
-            sortOrder: def.sortOrder,
-          },
+          data,
         });
         stats.bump(stats.categories, "updated");
+        results.push({ ...existing, ...data });
       } else {
         stats.bump(stats.categories, "skipped");
+        results.push(existing);
       }
-      results.push(existing);
       continue;
     }
-    const created = await prisma.category.create({ data: def });
+    const created = await prisma.category.create({
+      data: { slug: def.slug, ...data },
+    });
     stats.bump(stats.categories, "created");
     results.push(created);
   }
   return results;
+}
+
+async function hideLegacyCategories(prisma: PrismaClient, stats: SeedStats) {
+  const result = await prisma.category.updateMany({
+    where: { slug: { in: [...LEGACY_CATEGORY_SLUGS] } },
+    data: { isActive: false, showInNav: false },
+  });
+  if (result.count > 0) stats.bump(stats.categories, "updated");
+}
+
+async function migrateLegacyAndBadgesToTags(
+  prisma: PrismaClient,
+  stats: SeedStats,
+  categoryBySlug: Record<string, { id: string }>,
+) {
+  for (const [legacySlug, promoSlug] of Object.entries(LEGACY_CATEGORY_TO_PROMO)) {
+    const legacy = await prisma.category.findUnique({ where: { slug: legacySlug } });
+    const promo = categoryBySlug[promoSlug];
+    if (!legacy || !promo) continue;
+
+    const links = await prisma.productCategory.findMany({
+      where: { categoryId: legacy.id },
+    });
+    if (!links.length) continue;
+
+    const created = await prisma.productCategory.createMany({
+      data: links.map((link) => ({
+        productId: link.productId,
+        categoryId: promo.id,
+      })),
+      skipDuplicates: true,
+    });
+    if (created.count > 0) stats.bump(stats.products, "linked");
+  }
+
+  const badges = await prisma.badge.findMany({
+    include: { products: true },
+  });
+  for (const badge of badges) {
+    const promo = categoryBySlug[badge.slug];
+    if (!promo || badge.products.length === 0) continue;
+    const created = await prisma.productCategory.createMany({
+      data: badge.products.map((row) => ({
+        productId: row.productId,
+        categoryId: promo.id,
+      })),
+      skipDuplicates: true,
+    });
+    if (created.count > 0) stats.bump(stats.products, "linked");
+  }
 }
 
 async function ensureBadges(
@@ -158,15 +215,15 @@ async function ensureDemoProducts(
   upgrade: boolean,
   storeBySlug: Record<string, { id: string }>,
   categoryBySlug: Record<string, { id: string }>,
-  badgeBySlug: Record<string, { id: string }>,
 ) {
   const results = [];
   for (const def of DEMO_PRODUCT_DEFS) {
     const store = storeBySlug[def.storeSlug];
     if (!store) throw new Error(`Loja não encontrada: ${def.storeSlug}`);
 
-    const categoryIds = def.categorySlugs.map((s) => categoryBySlug[s]?.id).filter(Boolean) as string[];
-    const badgeIds = def.badgeSlugs.map((s) => badgeBySlug[s]?.id).filter(Boolean) as string[];
+    const categoryIds = def.tagSlugs
+      .map((s) => categoryBySlug[s]?.id)
+      .filter(Boolean) as string[];
 
     const existing = await prisma.product.findUnique({ where: { slug: def.slug } });
     const discount = discountPercent(def.priceCurrent, def.priceOriginal);
@@ -183,13 +240,16 @@ async function ensureDemoProducts(
             discountPercent: discount,
             affiliateUrl: def.affiliateUrl,
             storeId: store.id,
+            isPublished: true,
+            isFeatured: true,
+            publishedAt: existing.publishedAt ?? new Date(),
           },
         });
         stats.bump(stats.products, "updated");
       } else {
         stats.bump(stats.products, "skipped");
       }
-      await linkProductRelations(prisma, stats, existing.id, categoryIds, badgeIds);
+      await linkProductTags(prisma, stats, existing.id, categoryIds);
       results.push(existing);
       continue;
     }
@@ -210,9 +270,6 @@ async function ensureDemoProducts(
         categories: {
           create: categoryIds.map((categoryId) => ({ categoryId })),
         },
-        badges: {
-          create: badgeIds.map((badgeId) => ({ badgeId })),
-        },
       },
     });
     stats.bump(stats.products, "created");
@@ -221,27 +278,18 @@ async function ensureDemoProducts(
   return results;
 }
 
-async function linkProductRelations(
+async function linkProductTags(
   prisma: PrismaClient,
   stats: SeedStats,
   productId: string,
   categoryIds: string[],
-  badgeIds: string[],
 ) {
-  if (categoryIds.length) {
-    const cat = await prisma.productCategory.createMany({
-      data: categoryIds.map((categoryId) => ({ productId, categoryId })),
-      skipDuplicates: true,
-    });
-    if (cat.count > 0) stats.bump(stats.products, "linked");
-  }
-  if (badgeIds.length) {
-    const bad = await prisma.productBadge.createMany({
-      data: badgeIds.map((badgeId) => ({ productId, badgeId })),
-      skipDuplicates: true,
-    });
-    if (bad.count > 0) stats.bump(stats.products, "linked");
-  }
+  if (!categoryIds.length) return;
+  const cat = await prisma.productCategory.createMany({
+    data: categoryIds.map((categoryId) => ({ productId, categoryId })),
+    skipDuplicates: true,
+  });
+  if (cat.count > 0) stats.bump(stats.products, "linked");
 }
 
 async function ensureCollections(
@@ -392,4 +440,3 @@ async function ensurePages(
     stats.bump(stats.pages, "created");
   }
 }
-

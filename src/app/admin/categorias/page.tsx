@@ -1,27 +1,76 @@
+import { BadgeStyle, CategoryKind } from "@prisma/client";
 import { createCategory, deactivateCategory } from "@/actions/admin/categories";
 import { NavLink } from "@/components/ui/nav-link";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { prisma } from "@/lib/db";
 import { isDatabaseConfigured } from "@/lib/safe-db";
+import { TAG_KIND_LABELS, TAG_STYLE_LABELS } from "@/lib/tags";
 
-export default async function AdminCategoriasPage() {
+export default async function AdminTagsPage() {
   if (!isDatabaseConfigured()) {
     return <p className="text-zinc-400">Banco não configurado.</p>;
   }
 
-  const categories = await prisma.category.findMany({
-    orderBy: { sortOrder: "asc" },
+  const tags = await prisma.category.findMany({
+    orderBy: [{ kind: "asc" }, { sortOrder: "asc" }],
   });
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">Categorias</h1>
+      <h1 className="mb-2 text-2xl font-bold">Tags</h1>
+      <p className="mb-6 text-sm text-zinc-400">
+        Promoção (Viral, Oferta, Novo) e departamento (Casa, Beleza, Tech…).
+      </p>
 
-      <form action={createCategory} className="mb-10 grid max-w-2xl gap-3 rounded-xl border border-zinc-800 bg-zinc-900 p-4 sm:grid-cols-2">
-        <input name="name" placeholder="Nome" required className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm" />
-        <input name="slug" placeholder="slug (opcional)" className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm" />
-        <input name="icon" placeholder="Emoji 🔥" className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm" />
-        <input name="sortOrder" type="number" defaultValue={0} className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm" />
+      <form
+        action={createCategory}
+        className="mb-10 grid max-w-2xl gap-3 rounded-xl border border-zinc-800 bg-zinc-900 p-4 sm:grid-cols-2"
+      >
+        <input
+          name="name"
+          placeholder="Nome"
+          required
+          className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
+        />
+        <input
+          name="slug"
+          placeholder="slug (opcional)"
+          className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
+        />
+        <input
+          name="icon"
+          placeholder="Emoji 🔥"
+          className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
+        />
+        <input
+          name="sortOrder"
+          type="number"
+          defaultValue={0}
+          className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
+        />
+        <select
+          name="kind"
+          defaultValue={CategoryKind.DEPARTMENT}
+          className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
+        >
+          {Object.entries(TAG_KIND_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+        <select
+          name="style"
+          defaultValue=""
+          className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
+        >
+          <option value="">Estilo (só promoção)</option>
+          {Object.entries(TAG_STYLE_LABELS).map(([value, label]) => (
+            <option key={value} value={value as BadgeStyle}>
+              {label}
+            </option>
+          ))}
+        </select>
         <label className="flex items-center gap-2 text-sm sm:col-span-2">
           <input type="checkbox" name="showInNav" defaultChecked />
           Mostrar na navegação
@@ -30,27 +79,29 @@ export default async function AdminCategoriasPage() {
           pendingLabel="Adicionando…"
           className="rounded-lg bg-amber-500 py-2 text-sm font-semibold text-zinc-950 cursor-pointer sm:col-span-2"
         >
-          Adicionar categoria
+          Adicionar tag
         </SubmitButton>
       </form>
 
       <table className="w-full text-left text-sm">
         <thead className="text-zinc-400">
           <tr>
-            <th className="p-2">Categoria</th>
+            <th className="p-2">Tag</th>
             <th className="p-2">Slug</th>
+            <th className="p-2">Tipo</th>
             <th className="p-2">Nav</th>
             <th className="p-2" />
           </tr>
         </thead>
         <tbody>
-          {categories.map((c) => (
+          {tags.map((c) => (
             <tr key={c.id} className="border-t border-zinc-800">
               <td className="p-2">
                 {c.icon} {c.name}
               </td>
               <td className="p-2 text-zinc-400">{c.slug}</td>
-              <td className="p-2">{c.showInNav ? "Sim" : "Não"}</td>
+              <td className="p-2">{TAG_KIND_LABELS[c.kind]}</td>
+              <td className="p-2">{c.showInNav && c.isActive ? "Sim" : "Não"}</td>
               <td className="p-2 text-right">
                 <NavLink
                   href={`/admin/categorias/${c.id}`}

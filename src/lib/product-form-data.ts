@@ -1,4 +1,4 @@
-import type { Badge, Category, ProductMedia, Store } from "@prisma/client";
+import type { Category, ProductMedia, Store } from "@prisma/client";
 
 export type ProductFormInput = {
   id: string;
@@ -14,7 +14,6 @@ export type ProductFormInput = {
   priceCurrent: string;
   priceOriginal: string | null;
   categories: { categoryId: string }[];
-  badges: { badgeId: string }[];
   media?: ProductMedia[];
 };
 
@@ -32,7 +31,6 @@ type ProductWithRelations = {
   priceCurrent: { toString(): string };
   priceOriginal: { toString(): string } | null;
   categories: { categoryId: string }[];
-  badges: { badgeId: string }[];
   media?: ProductMedia[];
 };
 
@@ -52,7 +50,6 @@ export function toProductFormInput(product: ProductWithRelations): ProductFormIn
     priceCurrent: product.priceCurrent.toString(),
     priceOriginal: product.priceOriginal?.toString() ?? null,
     categories: product.categories,
-    badges: product.badges,
     media: product.media,
   };
 }
@@ -60,5 +57,4 @@ export function toProductFormInput(product: ProductWithRelations): ProductFormIn
 export type ProductFormLookups = {
   stores: Store[];
   categories: Category[];
-  badges: Badge[];
 };

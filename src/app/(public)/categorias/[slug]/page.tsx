@@ -1,13 +1,5 @@
-import { notFound } from "next/navigation";
-import { CatalogToolbar } from "@/components/catalog/catalog-toolbar";
-import { Pagination } from "@/components/catalog/pagination";
-import { PriceRangeFilter } from "@/components/catalog/price-range-filter";
-import { ProductGrid } from "@/components/catalog/product-grid";
-import { getCategoryBySlug, getProducts } from "@/lib/catalog";
-import { filtersToSearchParams } from "@/lib/catalog-params";
-import { parseCatalogSearchParams } from "@/lib/filters";
-
-export const revalidate = 60;
+import { permanentRedirect } from "next/navigation";
+import { catalogQueryString } from "@/lib/filters";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -16,44 +8,21 @@ type Props = {
 
 export default async function CategoriaPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const category = await getCategoryBySlug(slug);
-  if (!category) notFound();
-
   const sp = await searchParams;
-  const filters = parseCatalogSearchParams(sp);
-  const { items, total, page, totalPages } = await getProducts({
-    ...filters,
-    categorySlug: slug,
-  });
+  const get = (key: string) => {
+    const v = sp[key];
+    return typeof v === "string" ? v : undefined;
+  };
 
-  const extra = { ...filtersToSearchParams(filters), categoria: slug };
-
-  return (
-    <main className="px-6 py-9 md:px-10">
-      <CatalogToolbar
-        title={`${category.icon ?? ""} ${category.name}`.trim()}
-        total={total}
-        basePath={`/categorias/${slug}`}
-        currentSort={filters.sort}
-        extraParams={extra}
-      />
-      <PriceRangeFilter
-        action={`/categorias/${slug}`}
-        priceMin={filters.priceMin}
-        priceMax={filters.priceMax}
-        hiddenParams={extra}
-      />
-      <ProductGrid products={items} />
-      <Pagination
-        page={page}
-        totalPages={totalPages}
-        basePath={`/categorias/${slug}`}
-        extraParams={{
-          ...extra,
-          ...(filters.priceMin != null ? { preco_min: String(filters.priceMin) } : {}),
-          ...(filters.priceMax != null ? { preco_max: String(filters.priceMax) } : {}),
-        }}
-      />
-    </main>
+  permanentRedirect(
+    `/produtos${catalogQueryString({
+      tag: slug,
+      loja: get("loja"),
+      q: get("q"),
+      ordenar: get("ordenar"),
+      preco_min: get("preco_min"),
+      preco_max: get("preco_max"),
+      page: get("page"),
+    })}`,
   );
 }

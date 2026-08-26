@@ -6,14 +6,15 @@
 |---------|-----|
 | `npm run db:seed` | Igual a `db:seed:ensure` (produção / upgrades) |
 | `npm run db:seed:ensure` | Cria só o que falta; não sobrescreve conteúdo |
-| `npm run db:seed:demo` | Ensure + produtos/coleções demo |
+| `npm run db:seed:demo` | **Dev local:** ensure + produtos/coleções demo (todas as lojas e tags) |
 | `npm run db:seed:upgrade` | Ensure + atualiza entidades do manifesto (slugs fixos) |
 
 Todos usam `DIRECT_URL` quando definida (recomendado no Supabase).
 
 ## Modo `ensure` (padrão)
 
-- Lojas, categorias, badges: cria se não existir; **não altera** se já existir.
+- Lojas e tags (categorias): cria se não existir; **não altera** se já existir.
+- Tags promo (`viral`, `oferta`, `novo`) são criadas no manifesto; categorias antigas `viral-agora` / `ofertas` / `novidades` são ocultadas da nav.
 - Settings e páginas: **só cria chaves/slugs ausentes**; nunca sobrescreve valor editado.
 - Produtos demo: **não roda** (use `demo`).
 - Coleções: cria shell; **não remove** vínculos existentes.

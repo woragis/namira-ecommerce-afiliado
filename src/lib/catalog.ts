@@ -2,10 +2,10 @@ import { cache } from "react";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { safeDbQuery } from "@/lib/safe-db";
+import { sortNavTags } from "@/lib/tags";
 
 export const productListInclude = {
   store: true,
-  badges: { include: { badge: true } },
   categories: { include: { category: true } },
 } satisfies Prisma.ProductInclude;
 
@@ -24,8 +24,7 @@ export type ProductWithRelations = Prisma.ProductGetPayload<{
 
 export type CatalogFilters = {
   storeSlug?: string;
-  categorySlug?: string;
-  badgeSlug?: string;
+  tagSlug?: string;
   search?: string;
   priceMin?: number;
   priceMax?: number;
@@ -82,22 +81,14 @@ export const getActiveStores = cache(async function getActiveStores() {
   );
 });
 
-export const getBadges = cache(async function getBadges() {
-  return safeDbQuery(
-    () => prisma.badge.findMany({ orderBy: { label: "asc" } }),
-    [],
-  );
-});
-
-export const getNavCategories = cache(async function getNavCategories() {
-  return safeDbQuery(
-    () =>
-      prisma.category.findMany({
-        where: { isActive: true, showInNav: true },
-        orderBy: { sortOrder: "asc" },
-      }),
-    [],
-  );
+export const getNavTags = cache(async function getNavTags() {
+  return safeDbQuery(async () => {
+    const tags = await prisma.category.findMany({
+      where: { isActive: true, showInNav: true },
+      orderBy: { sortOrder: "asc" },
+    });
+    return sortNavTags(tags);
+  }, []);
 });
 
 export async function getHomeCollections() {
@@ -119,31 +110,35 @@ export async function getHomeCollections() {
   );
 }
 
-function buildProductWhere(filters: CatalogFilters): Prisma.ProductWhereInput {
-  const where: Prisma.ProductWhereInput = { isPublished: true };
+export function buildProductWhere(filters: CatalogFilters): Prisma.ProductWhereInput {
+  const and: Prisma.ProductWhereInput[] = [{ isPublished: true }];
 
   if (filters.storeSlug) {
-    where.store = { slug: filters.storeSlug, isActive: true };
+    and.push({ store: { slug: filters.storeSlug, isActive: true } });
   }
 
-  if (filters.categorySlug) {
-    where.categories = {
-      some: { category: { slug: filters.categorySlug, isActive: true } },
-    };
-  }
-
-  if (filters.badgeSlug) {
-    where.badges = {
-      some: { badge: { slug: filters.badgeSlug } },
-    };
+  if (filters.tagSlug) {
+    and.push({
+      categories: {
+        some: { category: { slug: filters.tagSlug, isActive: true } },
+      },
+    });
   }
 
   if (filters.search?.trim()) {
     const q = filters.search.trim();
-    where.OR = [
-      { title: { contains: q, mode: "insensitive" } },
-      { description: { contains: q, mode: "insensitive" } },
-    ];
+    and.push({
+      OR: [
+        { title: { contains: q, mode: "insensitive" } },
+        { description: { contains: q, mode: "insensitive" } },
+        { store: { name: { contains: q, mode: "insensitive" } } },
+        {
+          categories: {
+            some: { category: { name: { contains: q, mode: "insensitive" } } },
+          },
+        },
+      ],
+    });
   }
 
   const priceFilter: Prisma.DecimalFilter<"Product"> = {};
@@ -154,10 +149,10 @@ function buildProductWhere(filters: CatalogFilters): Prisma.ProductWhereInput {
     priceFilter.lte = filters.priceMax;
   }
   if (Object.keys(priceFilter).length > 0) {
-    where.priceCurrent = priceFilter;
+    and.push({ priceCurrent: priceFilter });
   }
 
-  return where;
+  return { AND: and };
 }
 
 function buildProductOrderBy(

@@ -31,14 +31,13 @@ export default async function EditarProdutoPage({ params }: Props) {
 
   const metricsEnabled = isAdminMetricsEnabled();
 
-  const [product, stores, categories, badges, metrics] = await Promise.all([
+  const [product, stores, categories, metrics] = await Promise.all([
     safeDbQuery(
       () =>
         prisma.product.findUnique({
           where: { id },
           include: {
             categories: { select: { categoryId: true } },
-            badges: { select: { badgeId: true } },
             media: { orderBy: { sortOrder: "asc" } },
           },
         }),
@@ -60,7 +59,6 @@ export default async function EditarProdutoPage({ params }: Props) {
         }),
       [],
     ),
-    safeDbQuery(() => prisma.badge.findMany(), []),
     metricsEnabled
       ? safeDbQuery(
           () =>
@@ -102,7 +100,6 @@ export default async function EditarProdutoPage({ params }: Props) {
         product={productFormInput}
         stores={stores}
         categories={categories}
-        badges={badges}
       />
     </div>
   );

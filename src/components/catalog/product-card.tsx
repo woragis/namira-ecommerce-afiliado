@@ -6,13 +6,7 @@ import { WhatsAppShareButton } from "@/components/catalog/whatsapp-share-button"
 import { formatPrice, type ProductListItem } from "@/lib/catalog";
 import { displayProductTitle } from "@/lib/product-display";
 import { resolveAffiliatePath, resolveProductSharePath } from "@/lib/share-code";
-import type { BadgeStyle } from "@prisma/client";
-
-const badgeClass: Record<BadgeStyle, string> = {
-  VIRAL: "bg-[var(--dourado)] text-[var(--dourado-escuro)]",
-  OFF: "bg-[var(--roxo-escuro)] text-white",
-  NOVO: "bg-[var(--roxo-mais-escuro)] text-[var(--roxo-medio)]",
-};
+import { productPromoTags, TAG_STYLE_CLASS } from "@/lib/tags";
 
 type Props = {
   product: ProductListItem;
@@ -58,12 +52,15 @@ export function ProductCard({ product }: Props) {
                   ⭐ Destaque
                 </span>
               ) : null}
-              {product.badges.map(({ badge }) => (
+              {productPromoTags(product).map((tag) => (
                 <span
-                  key={badge.id}
-                  className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wide ${badgeClass[badge.style]}`}
+                  key={tag.id}
+                  className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wide ${
+                    tag.style ? TAG_STYLE_CLASS[tag.style] : "bg-[var(--roxo-escuro)] text-white"
+                  }`}
                 >
-                  {badge.label}
+                  {tag.icon ? `${tag.icon} ` : ""}
+                  {tag.name}
                 </span>
               ))}
             </div>

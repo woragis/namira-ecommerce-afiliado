@@ -1,4 +1,4 @@
-import { BadgeStyle, CollectionType } from "@prisma/client";
+import { BadgeStyle, CategoryKind, CollectionType } from "@prisma/client";
 
 /** Slugs de produtos de demonstração — nunca conflitam com catálogo real se usar slugs próprios. */
 export const DEMO_PRODUCT_SLUGS = [
@@ -8,6 +8,14 @@ export const DEMO_PRODUCT_SLUGS = [
   "organizador-maquiagem-giratorio",
   "tapete-yoga-antiderrapante",
   "vela-perfumada-soja",
+  "fone-bluetooth-tws",
+  "vestido-linho-verao",
+  "kit-skincare-vitamina-c",
+  "smartwatch-esportivo",
+  "jogo-lencol-algodao",
+  "jaqueta-corta-vento",
+  "elastico-resistencia-kit",
+  "bolsa-crossbody-couro",
 ] as const;
 
 export const STORE_DEFS = [
@@ -73,15 +81,99 @@ export const STORE_DEFS = [
   },
 ] as const;
 
+export const LEGACY_CATEGORY_SLUGS = [
+  "viral-agora",
+  "ofertas",
+  "novidades",
+] as const;
+
+export const LEGACY_CATEGORY_TO_PROMO: Record<string, string> = {
+  "viral-agora": "viral",
+  ofertas: "oferta",
+  novidades: "novo",
+};
+
 export const CATEGORY_DEFS = [
-  { slug: "viral-agora", name: "Viral agora", icon: "🔥", sortOrder: 1 },
-  { slug: "ofertas", name: "Ofertas", icon: "⚡", sortOrder: 2 },
-  { slug: "novidades", name: "Novidades", icon: "✨", sortOrder: 3 },
-  { slug: "casa", name: "Casa", icon: "🏠", sortOrder: 4 },
-  { slug: "beleza", name: "Beleza", icon: "💄", sortOrder: 5 },
-  { slug: "tech", name: "Tech", icon: "📱", sortOrder: 6 },
-  { slug: "moda", name: "Moda", icon: "👗", sortOrder: 7 },
-  { slug: "fitness", name: "Fitness", icon: "🏋️", sortOrder: 8 },
+  {
+    slug: "viral",
+    name: "Viral",
+    icon: "🔥",
+    sortOrder: 1,
+    kind: CategoryKind.PROMO,
+    style: BadgeStyle.VIRAL,
+    showInNav: true,
+    isActive: true,
+  },
+  {
+    slug: "oferta",
+    name: "Oferta",
+    icon: "⚡",
+    sortOrder: 2,
+    kind: CategoryKind.PROMO,
+    style: BadgeStyle.OFF,
+    showInNav: true,
+    isActive: true,
+  },
+  {
+    slug: "novo",
+    name: "Novo",
+    icon: "✨",
+    sortOrder: 3,
+    kind: CategoryKind.PROMO,
+    style: BadgeStyle.NOVO,
+    showInNav: true,
+    isActive: true,
+  },
+  {
+    slug: "casa",
+    name: "Casa",
+    icon: "🏠",
+    sortOrder: 4,
+    kind: CategoryKind.DEPARTMENT,
+    style: null,
+    showInNav: true,
+    isActive: true,
+  },
+  {
+    slug: "beleza",
+    name: "Beleza",
+    icon: "💄",
+    sortOrder: 5,
+    kind: CategoryKind.DEPARTMENT,
+    style: null,
+    showInNav: true,
+    isActive: true,
+  },
+  {
+    slug: "tech",
+    name: "Tech",
+    icon: "📱",
+    sortOrder: 6,
+    kind: CategoryKind.DEPARTMENT,
+    style: null,
+    showInNav: true,
+    isActive: true,
+  },
+  {
+    slug: "moda",
+    name: "Moda",
+    icon: "👗",
+    sortOrder: 7,
+    kind: CategoryKind.DEPARTMENT,
+    style: null,
+    showInNav: true,
+    isActive: true,
+  },
+  {
+    slug: "fitness",
+    name: "Fitness",
+    icon: "🏋️",
+    sortOrder: 8,
+    kind: CategoryKind.DEPARTMENT,
+    style: null,
+    showInNav: true,
+    isActive: true,
+  },
 ] as const;
 
 export const BADGE_DEFS = [
@@ -110,8 +202,13 @@ export const COLLECTION_DEFS = [
       homeSortOrder: 1,
       maxProducts: 12,
     },
-    /** Só em demo: pode repopular membros se vazia ou com ALLOW_DESTRUCTIVE_SEED */
-    demoProductSlugs: DEMO_PRODUCT_SLUGS,
+    demoProductSlugs: [
+      "purificador-ar-difusor-led",
+      "organizador-maquiagem-giratorio",
+      "smartwatch-esportivo",
+      "jaqueta-corta-vento",
+      "massageador-pescoco-infravermelho",
+    ] as const,
   },
   {
     slug: "tendencia-semana",
@@ -132,7 +229,11 @@ export const COLLECTION_DEFS = [
       homeSortOrder: 0,
       maxProducts: 3,
     },
-    demoProductSlugs: DEMO_PRODUCT_SLUGS.slice(0, 3),
+    demoProductSlugs: [
+      "mini-projetor-portatil-hd",
+      "kit-skincare-vitamina-c",
+      "vestido-linho-verao",
+    ] as const,
   },
 ] as const;
 
@@ -177,8 +278,7 @@ export type DemoProductDef = {
   priceOriginal: number | null;
   storeSlug: string;
   affiliateUrl: string;
-  categorySlugs: string[];
-  badgeSlugs: string[];
+  tagSlugs: string[];
 };
 
 export const DEMO_PRODUCT_DEFS: DemoProductDef[] = [
@@ -189,8 +289,7 @@ export const DEMO_PRODUCT_DEFS: DemoProductDef[] = [
     priceOriginal: 129,
     storeSlug: "shopee",
     affiliateUrl: "https://shopee.com.br/",
-    categorySlugs: ["viral-agora"],
-    badgeSlugs: ["viral"],
+    tagSlugs: ["casa", "viral"],
   },
   {
     slug: "massageador-pescoco-infravermelho",
@@ -199,8 +298,7 @@ export const DEMO_PRODUCT_DEFS: DemoProductDef[] = [
     priceOriginal: 219,
     storeSlug: "amazon",
     affiliateUrl: "https://amazon.com.br/",
-    categorySlugs: ["viral-agora"],
-    badgeSlugs: ["viral"],
+    tagSlugs: ["fitness", "viral"],
   },
   {
     slug: "mini-projetor-portatil-hd",
@@ -209,8 +307,7 @@ export const DEMO_PRODUCT_DEFS: DemoProductDef[] = [
     priceOriginal: 299,
     storeSlug: "mercado-livre",
     affiliateUrl: "https://mercadolivre.com.br/",
-    categorySlugs: ["novidades", "viral-agora"],
-    badgeSlugs: ["novo"],
+    tagSlugs: ["tech", "novo"],
   },
   {
     slug: "organizador-maquiagem-giratorio",
@@ -219,8 +316,7 @@ export const DEMO_PRODUCT_DEFS: DemoProductDef[] = [
     priceOriginal: 89,
     storeSlug: "shopee",
     affiliateUrl: "https://shopee.com.br/",
-    categorySlugs: ["viral-agora"],
-    badgeSlugs: ["viral"],
+    tagSlugs: ["beleza", "viral"],
   },
   {
     slug: "tapete-yoga-antiderrapante",
@@ -229,8 +325,7 @@ export const DEMO_PRODUCT_DEFS: DemoProductDef[] = [
     priceOriginal: 140,
     storeSlug: "amazon",
     affiliateUrl: "https://amazon.com.br/",
-    categorySlugs: ["ofertas"],
-    badgeSlugs: ["oferta"],
+    tagSlugs: ["fitness", "oferta"],
   },
   {
     slug: "vela-perfumada-soja",
@@ -239,7 +334,78 @@ export const DEMO_PRODUCT_DEFS: DemoProductDef[] = [
     priceOriginal: null,
     storeSlug: "shopee",
     affiliateUrl: "https://shopee.com.br/",
-    categorySlugs: ["novidades"],
-    badgeSlugs: ["novo"],
+    tagSlugs: ["casa", "novo"],
+  },
+  {
+    slug: "fone-bluetooth-tws",
+    title: "Fone bluetooth TWS com case carregador e cancelamento de ruído",
+    priceCurrent: 69.9,
+    priceOriginal: 119,
+    storeSlug: "mercado-livre",
+    affiliateUrl: "https://mercadolivre.com.br/",
+    tagSlugs: ["tech", "oferta"],
+  },
+  {
+    slug: "vestido-linho-verao",
+    title: "Vestido de linho midi com alças finas para o verão",
+    priceCurrent: 89.9,
+    priceOriginal: 149,
+    storeSlug: "shopee",
+    affiliateUrl: "https://shopee.com.br/",
+    tagSlugs: ["moda", "novo"],
+  },
+  {
+    slug: "kit-skincare-vitamina-c",
+    title: "Kit skincare vitamina C com sérum e hidratante facial",
+    priceCurrent: 64.9,
+    priceOriginal: 99.9,
+    storeSlug: "mercado-livre",
+    affiliateUrl: "https://mercadolivre.com.br/",
+    tagSlugs: ["beleza", "oferta"],
+  },
+  {
+    slug: "smartwatch-esportivo",
+    title: "Smartwatch esportivo com GPS e monitor cardíaco",
+    priceCurrent: 179.9,
+    priceOriginal: 249,
+    storeSlug: "amazon",
+    affiliateUrl: "https://amazon.com.br/",
+    tagSlugs: ["tech", "viral"],
+  },
+  {
+    slug: "jogo-lencol-algodao",
+    title: "Jogo de lençol 100% algodão 4 peças casal",
+    priceCurrent: 119.9,
+    priceOriginal: 189,
+    storeSlug: "mercado-livre",
+    affiliateUrl: "https://mercadolivre.com.br/",
+    tagSlugs: ["casa", "oferta"],
+  },
+  {
+    slug: "jaqueta-corta-vento",
+    title: "Jaqueta corta-vento impermeável unissex",
+    priceCurrent: 99.9,
+    priceOriginal: 169,
+    storeSlug: "amazon",
+    affiliateUrl: "https://amazon.com.br/",
+    tagSlugs: ["moda", "viral"],
+  },
+  {
+    slug: "elastico-resistencia-kit",
+    title: "Kit 5 elásticos de resistência para treino em casa",
+    priceCurrent: 39.9,
+    priceOriginal: 69.9,
+    storeSlug: "shopee",
+    affiliateUrl: "https://shopee.com.br/",
+    tagSlugs: ["fitness", "novo"],
+  },
+  {
+    slug: "bolsa-crossbody-couro",
+    title: "Bolsa crossbody de couro sintético com alça ajustável",
+    priceCurrent: 74.9,
+    priceOriginal: 129,
+    storeSlug: "mercado-livre",
+    affiliateUrl: "https://mercadolivre.com.br/",
+    tagSlugs: ["moda", "oferta"],
   },
 ];

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { NavLink } from "@/components/ui/nav-link";
 import { Logo } from "./logo";
 import { SearchForm } from "./search-form";
@@ -26,7 +27,9 @@ export function Header({ bannerText }: Props) {
       ) : null}
       <div className="flex h-[68px] items-center justify-between gap-6 px-6 md:px-10">
         <Logo />
-        <SearchForm />
+        <Suspense fallback={<div className="h-10 max-w-[480px] flex-1 rounded-full bg-[var(--roxo-claro)]" />}>
+          <SearchForm />
+        </Suspense>
         <div className="hidden shrink-0 items-center gap-5 sm:flex">
           <NavLink
             href="/favoritos"

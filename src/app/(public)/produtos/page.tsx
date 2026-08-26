@@ -1,9 +1,8 @@
-import { BadgeFilters } from "@/components/catalog/badge-filters";
 import { CatalogToolbar } from "@/components/catalog/catalog-toolbar";
 import { Pagination } from "@/components/catalog/pagination";
 import { PriceRangeFilter } from "@/components/catalog/price-range-filter";
 import { ProductGrid } from "@/components/catalog/product-grid";
-import { getBadges, getProducts } from "@/lib/catalog";
+import { getProducts } from "@/lib/catalog";
 import { filtersToSearchParams } from "@/lib/catalog-params";
 import { parseCatalogSearchParams } from "@/lib/filters";
 
@@ -16,17 +15,17 @@ type Props = {
 export default async function ProdutosPage({ searchParams }: Props) {
   const params = await searchParams;
   const filters = parseCatalogSearchParams(params);
-  const [{ items, total, page, totalPages }, badges] = await Promise.all([
-    getProducts(filters),
-    getBadges(),
-  ]);
+  const { items, total, page, totalPages } = await getProducts(filters);
 
   const extra = filtersToSearchParams(filters);
+  const title = filters.search
+    ? `Resultados para “${filters.search}”`
+    : "Todos os achados";
 
   return (
     <main className="px-6 py-9 md:px-10">
       <CatalogToolbar
-        title="Todos os achados"
+        title={title}
         total={total}
         basePath="/produtos"
         currentSort={filters.sort}
@@ -38,8 +37,14 @@ export default async function ProdutosPage({ searchParams }: Props) {
         priceMax={filters.priceMax}
         hiddenParams={extra}
       />
-      <BadgeFilters badges={badges} activeSlug={filters.badgeSlug} extraParams={extra} />
-      <ProductGrid products={items} />
+      <ProductGrid
+        products={items}
+        emptyFilters={{
+          storeSlug: filters.storeSlug,
+          tagSlug: filters.tagSlug,
+          search: filters.search,
+        }}
+      />
       <Pagination
         page={page}
         totalPages={totalPages}

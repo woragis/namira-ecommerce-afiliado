@@ -36,6 +36,8 @@ model Category {
   name        String
   icon        String?
   description String?
+  kind        CategoryKind      @default(DEPARTMENT)
+  style       BadgeStyle?
   sortOrder   Int               @default(0) @map("sort_order")
   showInNav   Boolean           @default(true) @map("show_in_nav")
   isActive    Boolean           @default(true) @map("is_active")
@@ -43,6 +45,7 @@ model Category {
   updatedAt   DateTime          @updatedAt @map("updated_at")
   products    ProductCategory[]
 
+  @@index([kind])
   @@map("categories")
 }
 
@@ -61,6 +64,11 @@ enum BadgeStyle {
   VIRAL
   OFF
   NOVO
+}
+
+enum CategoryKind {
+  DEPARTMENT
+  PROMO
 }
 
 enum MediaType {

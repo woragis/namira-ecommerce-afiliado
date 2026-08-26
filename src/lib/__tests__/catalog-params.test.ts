@@ -14,7 +14,7 @@ describe("filtersToSearchParams", () => {
       filtersToSearchParams({
         ...base,
         storeSlug: "amazon",
-        categorySlug: "tech",
+        tagSlug: "tech",
         search: "fone",
         priceMin: 50,
         priceMax: 200,
@@ -22,7 +22,7 @@ describe("filtersToSearchParams", () => {
       }),
     ).toEqual({
       loja: "amazon",
-      categoria: "tech",
+      tag: "tech",
       q: "fone",
       ordenar: "preco-desc",
     });

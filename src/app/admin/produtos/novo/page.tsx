@@ -7,10 +7,9 @@ export default async function NovoProdutoPage() {
     return <p className="text-zinc-400">Banco não configurado.</p>;
   }
 
-  const [stores, categories, badges] = await Promise.all([
+  const [stores, categories] = await Promise.all([
     prisma.store.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),
     prisma.category.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),
-    prisma.badge.findMany(),
   ]);
 
   return (
@@ -19,7 +18,7 @@ export default async function NovoProdutoPage() {
       {stores.length === 0 ? (
         <p className="text-zinc-400">Cadastre uma loja antes de criar produtos.</p>
       ) : (
-        <ProductForm stores={stores} categories={categories} badges={badges} />
+        <ProductForm stores={stores} categories={categories} />
       )}
     </div>
   );

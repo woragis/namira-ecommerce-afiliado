@@ -106,15 +106,51 @@ describe.skipIf(!dbAvailable)("Catálogo getProducts (integração DB)", () => {
     expect(prices).toEqual([...prices].sort((a, b) => a - b));
   });
 
-  it("filtra por categoria", async () => {
+  it("filtra por tag", async () => {
     if (!connected) return;
 
     const { items } = await getProducts({
-      categorySlug: "tech",
+      tagSlug: "tech",
       limit: 48,
     });
 
     expect(items.some((p) => p.slug === `${TEST_PREFIX}barato`)).toBe(true);
+  });
+
+  it("filtra loja e tag juntos", async () => {
+    if (!connected) return;
+
+    const { items } = await getProducts({
+      storeSlug: "amazon",
+      tagSlug: "tech",
+      limit: 48,
+    });
+
+    const testSlugs = items
+      .filter((p) => p.slug.startsWith(TEST_PREFIX))
+      .map((p) => p.slug);
+    expect(testSlugs).toContain(`${TEST_PREFIX}barato`);
+    expect(testSlugs).not.toContain(`${TEST_PREFIX}caro`);
+  });
+
+  it("busca por nome da loja e da tag", async () => {
+    if (!connected) return;
+
+    const byStore = await getProducts({
+      search: "Amazon",
+      limit: 48,
+    });
+    expect(
+      byStore.items.some((p) => p.slug === `${TEST_PREFIX}caro`),
+    ).toBe(true);
+
+    const byTag = await getProducts({
+      search: "Tech",
+      limit: 48,
+    });
+    expect(
+      byTag.items.some((p) => p.slug === `${TEST_PREFIX}barato`),
+    ).toBe(true);
   });
 
   it("getProductBySlug oculta não publicados", async () => {

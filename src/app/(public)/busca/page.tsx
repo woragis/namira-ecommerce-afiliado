@@ -1,10 +1,5 @@
-import { CatalogToolbar } from "@/components/catalog/catalog-toolbar";
-import { Pagination } from "@/components/catalog/pagination";
-import { ProductGrid } from "@/components/catalog/product-grid";
-import { getProducts } from "@/lib/catalog";
-import { parseCatalogSearchParams } from "@/lib/filters";
-
-export const revalidate = 60;
+import { permanentRedirect } from "next/navigation";
+import { catalogQueryString } from "@/lib/filters";
 
 type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -12,34 +7,20 @@ type Props = {
 
 export default async function BuscaPage({ searchParams }: Props) {
   const params = await searchParams;
-  const q = typeof params.q === "string" ? params.q : "";
-  const filters = parseCatalogSearchParams(params);
+  const get = (key: string) => {
+    const v = params[key];
+    return typeof v === "string" ? v : undefined;
+  };
 
-  const { items, total, page, totalPages } = await getProducts({
-    search: q,
-    page: filters.page,
-    limit: 24,
-    sort: filters.sort,
-  });
-
-  const extra: Record<string, string> = {};
-  if (q) extra.q = q;
-
-  return (
-    <main className="px-6 py-9 md:px-10">
-      <CatalogToolbar
-        title={q ? `Resultados para “${q}”` : "Busca"}
-        total={total}
-        basePath="/busca"
-        extraParams={extra}
-      />
-      <ProductGrid products={items} />
-      <Pagination
-        page={page}
-        totalPages={totalPages}
-        basePath="/busca"
-        extraParams={extra}
-      />
-    </main>
+  permanentRedirect(
+    `/produtos${catalogQueryString({
+      q: get("q"),
+      loja: get("loja"),
+      tag: get("tag") || get("categoria") || get("badge"),
+      ordenar: get("ordenar"),
+      preco_min: get("preco_min"),
+      preco_max: get("preco_max"),
+      page: get("page"),
+    })}`,
   );
 }

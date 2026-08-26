@@ -38,25 +38,14 @@ function revalidateProductCatalog(slug: string) {
   revalidatePath("/");
   revalidatePath("/produtos");
   revalidatePath(`/produtos/${slug}`);
-  revalidatePath("/busca");
 }
 
-async function syncProductRelations(
-  productId: string,
-  categoryIds: string[],
-  badgeIds: string[],
-) {
+async function syncProductRelations(productId: string, categoryIds: string[]) {
   await prisma.productCategory.deleteMany({ where: { productId } });
-  await prisma.productBadge.deleteMany({ where: { productId } });
 
   if (categoryIds.length) {
     await prisma.productCategory.createMany({
       data: categoryIds.map((categoryId) => ({ productId, categoryId })),
-    });
-  }
-  if (badgeIds.length) {
-    await prisma.productBadge.createMany({
-      data: badgeIds.map((badgeId) => ({ productId, badgeId })),
     });
   }
 }
@@ -118,11 +107,7 @@ export async function createProduct(formData: FormData) {
     },
   });
 
-  await syncProductRelations(
-    product.id,
-    parseIds(formData, "categoryIds"),
-    parseIds(formData, "badgeIds"),
-  );
+  await syncProductRelations(product.id, parseIds(formData, "categoryIds"));
   await syncProductMedia(product.id, formData);
 
   revalidateProductCatalog(slug);
@@ -182,11 +167,7 @@ export async function updateProduct(id: string, formData: FormData) {
     },
   });
 
-  await syncProductRelations(
-    id,
-    parseIds(formData, "categoryIds"),
-    parseIds(formData, "badgeIds"),
-  );
+  await syncProductRelations(id, parseIds(formData, "categoryIds"));
   await syncProductMedia(id, formData);
 
   await safeDbQuery(

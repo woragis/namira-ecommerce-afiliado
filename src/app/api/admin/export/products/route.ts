@@ -16,7 +16,6 @@ export async function GET(request: NextRequest) {
     include: {
       store: true,
       categories: { include: { category: true } },
-      badges: { include: { badge: true } },
     },
     orderBy: { updatedAt: "desc" },
   });
@@ -44,7 +43,10 @@ export async function GET(request: NextRequest) {
     p.priceOriginal ? String(p.priceOriginal) : "",
     p.imageUrl ?? "",
     p.categories.map((c) => c.category.slug).join("|"),
-    p.badges.map((b) => b.badge.slug).join("|"),
+    p.categories
+      .filter((c) => c.category.kind === "PROMO")
+      .map((c) => c.category.slug)
+      .join("|"),
     p.isPublished ? "true" : "false",
     p.isFeatured ? "true" : "false",
   ]);

@@ -16,7 +16,7 @@ cp .env.example .env
 
 npm install
 npx prisma db push
-npm run db:seed
+npm run db:seed:demo
 npm run dev
 ```
 

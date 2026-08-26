@@ -18,7 +18,7 @@ export default async function globalSetup() {
   if (!ok) {
     console.warn(
       "\n⚠️  Postgres indisponível — testes de integração serão ignorados.\n" +
-        "   Rode: npm run docker:up && npm run db:push && npm run db:seed\n",
+        "   Rode: npm run docker:up && npm run db:push && npm run db:seed:demo\n",
     );
   }
 }

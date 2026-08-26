@@ -5,7 +5,7 @@ import { StoreFilterNav } from "@/components/layout/store-filter-nav";
 import { WhatsAppFloat } from "@/components/layout/whatsapp-float";
 import {
   getActiveStores,
-  getNavCategories,
+  getNavTags,
   getSiteSettings,
 } from "@/lib/catalog";
 
@@ -14,22 +14,22 @@ export default async function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [settings, stores, categories] = await Promise.all([
+  const [settings, stores, tags] = await Promise.all([
     getSiteSettings(),
     getActiveStores(),
-    getNavCategories(),
+    getNavTags(),
   ]);
 
   return (
     <>
       <Header bannerText={settings.header_banner_text} />
       <Suspense fallback={<nav className="h-12 border-b bg-white" />}>
-        <StoreFilterNav stores={stores} categories={categories} />
+        <StoreFilterNav stores={stores} tags={tags} />
       </Suspense>
       <div className="flex-1">{children}</div>
       <Footer
         stores={stores}
-        categories={categories}
+        categories={tags}
         disclaimer={settings.footer_disclaimer}
         instagramUrl={settings.instagram_url}
       />

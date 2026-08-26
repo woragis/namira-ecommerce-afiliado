@@ -26,7 +26,7 @@ export function Footer({ stores, categories, disclaimer, instagramUrl }: Props) 
           <ul className="space-y-2 text-sm">
             {stores.map((s) => (
               <li key={s.id}>
-                <NavLink href={`/lojas/${s.slug}`} className="text-white/70 no-underline hover:text-white">
+                <NavLink href={`/produtos?loja=${s.slug}`} className="text-white/70 no-underline hover:text-white">
                   {s.name}
                 </NavLink>
               </li>
@@ -35,12 +35,12 @@ export function Footer({ stores, categories, disclaimer, instagramUrl }: Props) 
         </div>
         <div>
           <h4 className="mb-3 text-xs font-semibold tracking-wider text-white/40 uppercase">
-            Categorias
+            Tags
           </h4>
           <ul className="space-y-2 text-sm">
             {categories.slice(0, 5).map((c) => (
               <li key={c.id}>
-                <NavLink href={`/categorias/${c.slug}`} className="text-white/70 no-underline hover:text-white">
+                <NavLink href={`/produtos?tag=${c.slug}`} className="text-white/70 no-underline hover:text-white">
                   {c.name}
                 </NavLink>
               </li>

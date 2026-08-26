@@ -22,8 +22,7 @@ export function parseCatalogSearchParams(
 
   return {
     storeSlug: get("loja"),
-    categorySlug: get("categoria"),
-    badgeSlug: get("badge"),
+    tagSlug: get("tag") || get("categoria") || get("badge"),
     search: get("q"),
     priceMin: priceMin != null && !Number.isNaN(priceMin) ? priceMin : undefined,
     priceMax: priceMax != null && !Number.isNaN(priceMax) ? priceMax : undefined,
@@ -37,7 +36,7 @@ export function parseCatalogSearchParams(
 
 /** Monta query string preservando filtros ativos (sem page). */
 export function catalogQueryString(
-  extra: Record<string, string | undefined>,
+  extra: Record<string, string | undefined | null>,
 ): string {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(extra)) {
@@ -45,4 +44,25 @@ export function catalogQueryString(
   }
   const q = params.toString();
   return q ? `?${q}` : "";
+}
+
+export function catalogHref(parts: {
+  storeSlug?: string | null;
+  tagSlug?: string | null;
+  search?: string | null;
+  sort?: string | null;
+  priceMin?: number | null;
+  priceMax?: number | null;
+}): string {
+  return `/produtos${catalogQueryString({
+    loja: parts.storeSlug ?? undefined,
+    tag: parts.tagSlug ?? undefined,
+    q: parts.search ?? undefined,
+    ordenar:
+      parts.sort && parts.sort !== "recentes" ? parts.sort : undefined,
+    preco_min:
+      parts.priceMin != null ? String(parts.priceMin) : undefined,
+    preco_max:
+      parts.priceMax != null ? String(parts.priceMax) : undefined,
+  })}`;
 }

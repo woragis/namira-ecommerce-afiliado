@@ -1,4 +1,4 @@
-import type { Badge, Category, Store } from "@prisma/client";
+import type { Category, Store } from "@prisma/client";
 
 export type { ProductListItem, ProductWithRelations } from "@/lib/catalog";
 
@@ -17,7 +17,5 @@ export type StoreNavItem = Pick<
 
 export type CategoryNavItem = Pick<
   Category,
-  "id" | "slug" | "name" | "icon"
+  "id" | "slug" | "name" | "icon" | "kind"
 >;
-
-export type BadgeItem = Pick<Badge, "id" | "slug" | "label" | "style">;

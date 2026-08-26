@@ -62,15 +62,13 @@ export async function importProductsFromCsv(
     return result;
   }
 
-  const [stores, categories, badges] = await Promise.all([
+  const [stores, categories] = await Promise.all([
     prisma.store.findMany(),
     prisma.category.findMany(),
-    prisma.badge.findMany(),
   ]);
 
   const storeBySlug = Object.fromEntries(stores.map((s) => [s.slug, s.id]));
   const catBySlug = Object.fromEntries(categories.map((c) => [c.slug, c.id]));
-  const badgeBySlug = Object.fromEntries(badges.map((b) => [b.slug, b.id]));
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
@@ -117,8 +115,10 @@ export async function importProductsFromCsv(
       (row.is_featured ?? row.featured ?? row.destaque ?? "false").toLowerCase() ===
       "true";
 
-    const categorySlugs = splitList(row.categories ?? row.categorias ?? "");
-    const badgeSlugs = splitList(row.badges ?? row.selos ?? "");
+    const categorySlugs = [
+      ...splitList(row.categories ?? row.categorias ?? row.tags ?? ""),
+      ...splitList(row.badges ?? row.selos ?? ""),
+    ];
 
     try {
       const existing = await prisma.product.findUnique({
@@ -171,23 +171,15 @@ export async function importProductsFromCsv(
       }
 
       await prisma.productCategory.deleteMany({ where: { productId } });
-      await prisma.productBadge.deleteMany({ where: { productId } });
 
-      const categoryIds = categorySlugs
+      const uniqueSlugs = [...new Set(categorySlugs)];
+      const categoryIds = uniqueSlugs
         .map((s) => catBySlug[s])
-        .filter(Boolean) as string[];
-      const badgeIds = badgeSlugs
-        .map((s) => badgeBySlug[s])
         .filter(Boolean) as string[];
 
       if (categoryIds.length) {
         await prisma.productCategory.createMany({
           data: categoryIds.map((categoryId) => ({ productId, categoryId })),
-        });
-      }
-      if (badgeIds.length) {
-        await prisma.productBadge.createMany({
-          data: badgeIds.map((badgeId) => ({ productId, badgeId })),
         });
       }
     } catch (e) {

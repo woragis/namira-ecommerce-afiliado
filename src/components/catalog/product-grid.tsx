@@ -1,13 +1,62 @@
 import type { ProductListItem } from "@/lib/catalog";
+import { catalogHref } from "@/lib/filters";
 import { ProductCard } from "./product-card";
 
-export function ProductGrid({ products }: { products: ProductListItem[] }) {
+export type CatalogEmptyFilters = {
+  storeSlug?: string;
+  tagSlug?: string;
+  search?: string;
+};
+
+export function ProductGrid({
+  products,
+  emptyFilters,
+}: {
+  products: ProductListItem[];
+  emptyFilters?: CatalogEmptyFilters;
+}) {
   if (products.length === 0) {
+    const hasFilters = Boolean(
+      emptyFilters?.storeSlug || emptyFilters?.tagSlug || emptyFilters?.search,
+    );
+
     return (
-      <p className="rounded-2xl border border-dashed border-[var(--borda)] bg-white px-6 py-16 text-center text-[var(--texto-suave)]">
-        Nenhum produto encontrado. Configure o banco e rode o seed — veja{" "}
-        <code className="text-sm">docs/setup-sem-npm.md</code>.
-      </p>
+      <div className="rounded-2xl border border-dashed border-[var(--borda)] bg-white px-6 py-16 text-center">
+        <p className="text-[var(--texto-suave)]">
+          {hasFilters
+            ? "Nenhum achado nesta combinação."
+            : "Nenhum produto encontrado."}
+        </p>
+        {hasFilters ? (
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+            {emptyFilters?.tagSlug ? (
+              <a
+                href={catalogHref({
+                  storeSlug: emptyFilters.storeSlug,
+                  search: emptyFilters.search,
+                })}
+                className="text-sm font-medium text-[var(--roxo-escuro)] no-underline hover:underline"
+              >
+                Limpar tag
+              </a>
+            ) : null}
+            {emptyFilters?.storeSlug ? (
+              <a
+                href={catalogHref({ storeSlug: emptyFilters.storeSlug })}
+                className="text-sm font-medium text-[var(--roxo-escuro)] no-underline hover:underline"
+              >
+                Ver todos da loja
+              </a>
+            ) : null}
+            <a
+              href="/produtos"
+              className="text-sm font-medium text-[var(--roxo-escuro)] no-underline hover:underline"
+            >
+              Ver todos os achados
+            </a>
+          </div>
+        ) : null}
+      </div>
     );
   }
 

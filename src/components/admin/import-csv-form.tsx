@@ -101,7 +101,7 @@ export function ImportCsvForm() {
         </code>
         <p className="mt-3">
           <strong>store_slug:</strong> shopee, mercado-livre, amazon ·{" "}
-          <strong>categories/badges:</strong> slugs separados por | ·{" "}
+          <strong>categories / tags / badges:</strong> slugs separados por | (ex.: casa|viral) ·{" "}
           <strong>published:</strong> true/false
         </p>
         <p className="mt-3 flex flex-wrap gap-4">

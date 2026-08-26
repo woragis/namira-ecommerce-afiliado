@@ -27,8 +27,27 @@ test.describe("Catálogo público", () => {
     await page.goto("/produtos?loja=shopee");
 
     await expect(page).toHaveURL(/loja=shopee/);
-    const cards = page.locator('a[href^="/produtos/"]');
-    await expect(cards.first()).toBeVisible();
+    await expect(page.locator("article").first()).toBeVisible();
+  });
+
+  test("tabs de loja e tag mostram produtos", async ({ page }) => {
+    await page.goto("/produtos");
+    await expect(page.locator("article").first()).toBeVisible();
+
+    await page.locator('nav a[href*="loja=shopee"]').first().click();
+    await expect(page).toHaveURL(/loja=shopee/);
+    await expect(page.locator("article").first()).toBeVisible();
+
+    await page.locator("nav").getByRole("link", { name: "Todos", exact: true }).click();
+    await expect(page).not.toHaveURL(/loja=/);
+
+    await page.locator('nav a[href*="tag=casa"]').first().click();
+    await expect(page).toHaveURL(/tag=casa/);
+    await expect(page.locator("article").first()).toBeVisible();
+
+    await page.locator("nav").getByRole("link", { name: "Todas", exact: true }).click();
+    await expect(page).not.toHaveURL(/tag=/);
+    await expect(page.locator("article").first()).toBeVisible();
   });
 
   test("página de produto exibe título e link de compra", async ({ page }) => {

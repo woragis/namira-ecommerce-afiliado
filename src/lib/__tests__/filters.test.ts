@@ -1,24 +1,43 @@
 import { describe, expect, it } from "vitest";
-import { catalogQueryString, parseCatalogSearchParams } from "@/lib/filters";
+import {
+  catalogHref,
+  catalogQueryString,
+  parseCatalogSearchParams,
+} from "@/lib/filters";
 
 describe("parseCatalogSearchParams", () => {
-  it("parses store, category, badge and search", () => {
+  it("parses store, tag and search", () => {
     expect(
       parseCatalogSearchParams({
         loja: "shopee",
-        categoria: "beleza",
-        badge: "promo",
+        tag: "beleza",
         q: "creme",
       }),
     ).toMatchObject({
       storeSlug: "shopee",
-      categorySlug: "beleza",
-      badgeSlug: "promo",
+      tagSlug: "beleza",
       search: "creme",
       sort: "recentes",
       page: 1,
       limit: 24,
     });
+  });
+
+  it("uses tag over categoria/badge aliases", () => {
+    expect(
+      parseCatalogSearchParams({
+        tag: "tech",
+        categoria: "beleza",
+        badge: "viral",
+      }).tagSlug,
+    ).toBe("tech");
+  });
+
+  it("falls back categoria then badge to tagSlug", () => {
+    expect(parseCatalogSearchParams({ categoria: "beleza" }).tagSlug).toBe(
+      "beleza",
+    );
+    expect(parseCatalogSearchParams({ badge: "viral" }).tagSlug).toBe("viral");
   });
 
   it("accepts valid sort values", () => {
@@ -53,11 +72,25 @@ describe("parseCatalogSearchParams", () => {
 describe("catalogQueryString", () => {
   it("builds query string with active filters", () => {
     expect(
-      catalogQueryString({ loja: "shopee", categoria: undefined, q: "x" }),
+      catalogQueryString({ loja: "shopee", tag: undefined, q: "x" }),
     ).toBe("?loja=shopee&q=x");
   });
 
   it("returns empty string when no params", () => {
     expect(catalogQueryString({})).toBe("");
+  });
+});
+
+describe("catalogHref", () => {
+  it("builds canonical /produtos URL", () => {
+    expect(
+      catalogHref({ storeSlug: "shopee", tagSlug: "tech", search: "projetor" }),
+    ).toBe("/produtos?loja=shopee&tag=tech&q=projetor");
+  });
+
+  it("omits empty filters", () => {
+    expect(catalogHref({ storeSlug: null, tagSlug: null, search: null })).toBe(
+      "/produtos",
+    );
   });
 });

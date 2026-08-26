@@ -7,8 +7,7 @@ export function filtersToSearchParams(
 ): Record<string, string> {
   const params: Record<string, string> = {};
   if (filters.storeSlug) params.loja = filters.storeSlug;
-  if (filters.categorySlug) params.categoria = filters.categorySlug;
-  if (filters.badgeSlug) params.badge = filters.badgeSlug;
+  if (filters.tagSlug) params.tag = filters.tagSlug;
   if (filters.search) params.q = filters.search;
   if (filters.sort && filters.sort !== "recentes") params.ordenar = filters.sort;
   if (!omit.includes("priceMin") && filters.priceMin != null) {

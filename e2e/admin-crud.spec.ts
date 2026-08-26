@@ -41,7 +41,7 @@ test.describe("Admin CRUD", () => {
     await expect(page).toHaveURL(/\/admin\/produtos/, { timeout: 15_000 });
     await expect(page.getByText(testTitle)).toBeVisible();
 
-    await page.goto(`/busca?q=${encodeURIComponent(testTitle)}`);
+    await page.goto(`/produtos?q=${encodeURIComponent(testTitle)}`);
     await expect(page.locator("h3", { hasText: testTitle })).toBeVisible({
       timeout: 15_000,
     });
@@ -56,7 +56,7 @@ test.describe("Admin CRUD", () => {
     await row.locator("td").nth(4).getByRole("button").click();
     await page.waitForTimeout(1000);
 
-    await page.goto(`/busca?q=${encodeURIComponent(testTitle)}`);
+    await page.goto(`/produtos?q=${encodeURIComponent(testTitle)}`);
     await expect(page.locator("h3", { hasText: testTitle })).not.toBeVisible({
       timeout: 10_000,
     });

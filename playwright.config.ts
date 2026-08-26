@@ -31,10 +31,10 @@ export default defineConfig({
           ADMIN_SECRET: process.env.ADMIN_SECRET ?? "dev-admin-secret",
           DATABASE_URL:
             process.env.DATABASE_URL ??
-            "postgresql://namira:namira@localhost:5433/namira",
+            "postgresql://namira:namira@localhost:5436/namira",
           DIRECT_URL:
             process.env.DIRECT_URL ??
-            "postgresql://namira:namira@localhost:5433/namira",
+            "postgresql://namira:namira@localhost:5436/namira",
         },
       },
 });

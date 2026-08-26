@@ -1,17 +1,31 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { catalogHref } from "@/lib/filters";
 
 export function SearchForm({ defaultQuery = "" }: { defaultQuery?: string }) {
   const router = useRouter();
-  const [q, setQ] = useState(defaultQuery);
+  const searchParams = useSearchParams();
+  const [q, setQ] = useState(
+    () => defaultQuery || searchParams.get("q") || "",
+  );
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
     const trimmed = q.trim();
-    if (trimmed) router.push(`/busca?q=${encodeURIComponent(trimmed)}`);
-    else router.push("/produtos");
+    const loja = searchParams.get("loja");
+    const tag =
+      searchParams.get("tag") ??
+      searchParams.get("categoria") ??
+      searchParams.get("badge");
+    router.push(
+      catalogHref({
+        storeSlug: loja,
+        tagSlug: tag,
+        search: trimmed || null,
+      }),
+    );
   }
 
   return (
@@ -20,7 +34,7 @@ export function SearchForm({ defaultQuery = "" }: { defaultQuery?: string }) {
         type="search"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Buscar produtos virais..."
+        placeholder="Buscar produtos, lojas ou tags..."
         className="h-10 w-full rounded-full border-[1.5px] border-[var(--borda)] bg-[var(--roxo-claro)] pr-11 pl-4 text-sm text-[var(--texto)] outline-none focus:border-[var(--roxo)]"
       />
       <button
